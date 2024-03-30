@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Amazon | Software Development Engineer
+subtitle: Meta | iOS Software Development Engineer
 
 profile:
   align: right
@@ -13,7 +13,7 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: false  # includes social icons at the bottom of the page
 ---
 
-I am currently working at Amazon, London as a Software Developement Engineer.
+I am currently working at Meta, London as a iOS Software Developement Engineer.
 
 I completed my Master of Science by Research from the [Department of Computer Science and Engineering](https://www.cse.iitk.ac.in/){:target="\_blank"}, at [Indian Institute of Technology Kanpur](http://www.iitk.ac.in/){:target="\_blank"}, under the supervision of [Prof. Indranil Saha](https://www.cse.iitk.ac.in/users/isaha/){:target="\_blank"}. I have completed my Bachelor of Technology from Kamla Nehru Institute of Technology, Sultanpur in Computer Science and Engineering. 
 
