@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Sharding</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Partitioning data" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +40,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/sharding/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +74,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +105,68 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Sharding</h1>
+    <p class="post-meta">January 12, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Sharding of data is done to achieve <em>Scalability</em>. Sharding means that each piece of data belongs to exactly one shard only. Sharding and replication are usually combined. A node may store more than one shard.</p>
+
+<div>
+    <center><img src="/assets/img/shard/replication_sharding.png"></center>
+</div>
+
+<hr>
+
+<h3 id="sharding-by-key-range">Sharding by key range</h3>
+<p>One way of sharding is to assign nodes a continuous range of keys. All the reads/writes pertaining to a key range are transferred to a single node. This sharding technique is used by <strong><code class="language-plaintext highlighter-rouge">BigTable, HBase</code></strong>.</p>
+
+<p>Within each partition, we can keep keys in sorted order. This helps in range scan queries. The keys can be treated as a concatenated index in order to fetch serval related records in one query.</p>
+
+<p>For example, getting a range of data from the sensor can be done by designing the key as <em>(year-month-day-hour-minute-second)</em></p>
+
+<div>
+    <center><img src="/assets/img/shard/key_range.png"></center>
+</div>
+
+<p><br>
+<br></p>
+
+<p><strong>Hotspots</strong></p>
+<ul>
+  <li>This can still create hotspots. Suppose a group of sensors is writing values to the database. If the key is designed according to the time then, only one partition will receive all the writes and other partitions will be idle.</li>
+  <li>To overcome the problem the key can be prefixed with sensor id and that sensor id can be distributed across the partitions</li>
+</ul>
+
+<hr>
+
+<h3 id="sharding-by-hash-of-key">Sharding by Hash of Key</h3>
+
+<p>A hash function emits a random output even if the inputs are related. This makes is it perfect for keys distribution. The key is passed to a hash function. The resultant hash then determines the partition to which it should be assigned</p>
+
+<p>Due to randomization, the speed-up of range queries is lost</p>
+
+<p><strong><code class="language-plaintext highlighter-rouge">Cassandra</code></strong> combines the Hash and key range. It has a <strong><code class="language-plaintext highlighter-rouge">compound primary key</code></strong>, consisting of several columns. The first part is used as input to the hash function, the other part of the key is used to sort the data in the partition.</p>
+
+<p>This can be utilized in scenarios like social networking sites. The key can consist of <em>(user_id, update_timestamp)</em>. The data is distributed among partitions using the <em>user_id</em>. Within the partition, the data is sorted according to the <em>update_timestamp</em>.</p>
+
+
+  </article>
+
+</div>
 
     </div>
 

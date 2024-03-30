@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Cassandra</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Key/Value Store" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +40,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/cassandra/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +74,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +105,176 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Cassandra</h1>
+    <p class="post-meta">January 16, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Cassandra is a key/value store database. It provides <code class="language-plaintext highlighter-rouge">Availablity</code> and <code class="language-plaintext highlighter-rouge">Partial Fault Tolerance</code> from the CAP. Cassandra combines the <code class="language-plaintext highlighter-rouge">BigTable</code> data model and <code class="language-plaintext highlighter-rouge">Dynamo</code> system architecture.</p>
+
+<ul>
+  <li>The database is <code class="language-plaintext highlighter-rouge">NoSQL, wide-column, key-value</code> like BigTable.</li>
+  <li>It’s `key/value store, highly available like Dynamo.</li>
+</ul>
+
+<hr>
+
+<h2 id="fully-replicated">Fully replicated</h2>
+
+<p>Cassandra is a fully replicated, highly available, partial fault tolerance database. The data from each node is replicated to other nodes. The number of nodes to which data is replicated is called the <code class="language-plaintext highlighter-rouge">replication factor</code>. Generally, the replication factor is 3.</p>
+
+<p>When a client sends a <code class="language-plaintext highlighter-rouge">put(K,V)</code> operation</p>
+<ul>
+  <li>the data is replicated in the local data center as well as the other data center. The data is replicated on nodes in both the data center.</li>
+  <li>replication factor can also be set per data centers</li>
+</ul>
+
+<div>
+    <center><img src="/assets/img/cassandra/server.png"></center>
+</div>
+
+<hr>
+
+<h3 id="write">Write</h3>
+
+<ul>
+  <li>Client sends <code class="language-plaintext highlighter-rouge">put(K,V)</code> to the node.</li>
+  <li>The request is written into <code class="language-plaintext highlighter-rouge">commit log</code> for crash recovery</li>
+  <li>The values are inserted in the in-memory <code class="language-plaintext highlighter-rouge">memtable</code>
+</li>
+  <li>Memtables are periodically flushed to the file system in the form of <code class="language-plaintext highlighter-rouge">SSTables</code>
+</li>
+</ul>
+
+<div>
+    <img src="/assets/img/bigTable/BigTableWrite.png">
+</div>
+
+<hr>
+
+<h2 id="write-with-partitioning">Write with Partitioning</h2>
+
+<ul>
+  <li>For writes, it is necessary that a single node in the cluster is not overwhelmed with write requests, while other nodes are idle.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">Cassandra maintains a primary key for the table</code>. This primary key determines to which node the write request will be sent.</li>
+  <li>Each node is assigned a range, for which it stores the data. This node is called <code class="language-plaintext highlighter-rouge">primary</code>. The primary is also responsible for replicating the data to other nodes as per the replication factor.</li>
+  <li>For consistency and load distribution, the primary key is hashed either using MD5 or murmur3 hash.</li>
+  <li>The hashed key is then used with <code class="language-plaintext highlighter-rouge">consistent hashing</code> to determine the node.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">The data is first sent to the primary node and then replicated to other nodes</code> as per the replication factor.</li>
+</ul>
+
+<p><br></p>
+<div>
+    <img src="/assets/img/cassandra/table.png">
+</div>
+<p><br></p>
+
+<p><br></p>
+<div>
+    <img src="/assets/img/cassandra/hashed_pk.png">
+</div>
+<p><br></p>
+
+<p><br></p>
+<div>
+    <img src="/assets/img/cassandra/token_ring.png">
+</div>
+<p><br></p>
+
+<hr>
+
+<h2 id="read">Read</h2>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Client can connect to any node in the cluster</code></li>
+  <li><code class="language-plaintext highlighter-rouge">All nodes are aware of each other in the cluster</code></li>
+  <li><code class="language-plaintext highlighter-rouge">All nodes know which node is responsible for the key range along with its replica</code></li>
+  <li>If the client connects to a node that is neither primary nor the replica of primary, the node forwards the read request based on the hashed key to the responsible primary node and its replica</li>
+</ul>
+
+<p><br></p>
+<div>
+    <img src="/assets/img/cassandra/read.png">
+</div>
+<p><br></p>
+
+<ul>
+  <li>Node 4 receives the client request for a read</li>
+  <li>If node 4 is not responsible for the key range, it is aware that the requested key has primary as node 1</li>
+  <li>request is forwarded to node 1 along with the replicas responsible for the key</li>
+  <li>node 4 waits for the quorum</li>
+  <li>once the quorum is received, it forwards data to the client</li>
+</ul>
+
+<hr>
+
+<h3 id="consistency-level">Consistency Level</h3>
+
+<p>For every read request, read repair is performed. It can be done across data centers as well</p>
+
+<ul>
+  <li>
+<strong>ONE</strong> :
+    <ul>
+      <li>the data is returned to client from a single node.</li>
+      <li>very fast but high probability of stale data</li>
+    </ul>
+  </li>
+  <li>
+<strong>QUORUM</strong>:
+    <ul>
+      <li>&gt; 51% replicas ack</li>
+      <li>high consistency as there is atleast one single node that has seen the latest write</li>
+    </ul>
+  </li>
+  <li>
+<strong>LOCAL QUORUM</strong>:
+    <ul>
+      <li>&gt; 51% replicas ack in local Data Center</li>
+    </ul>
+  </li>
+  <li>
+<strong>LOCAL_ONE</strong>:
+    <ul>
+      <li>&gt; read repair only in local Data Center</li>
+    </ul>
+  </li>
+  <li>
+<strong>ALL</strong>:
+    <ul>
+      <li>Ack from all nodes</li>
+    </ul>
+  </li>
+</ul>
+
+<hr>
+
+<p><strong><code class="language-plaintext highlighter-rouge">Cassandra</code></strong> combines the Hash and key range. It has a <strong><code class="language-plaintext highlighter-rouge"> compound primary key</code></strong>, consisting of several columns. The first part is used as input to the hash function, the other part of the key is used to sort the data in the partition.</p>
+
+<h2 id="resources">Resources</h2>
+
+<ol>
+  <li><a href="https://www.youtube.com/watch?v=B_HTdrTgGNs&amp;ab_channel=CernerEng" target="_blank" rel="noopener noreferrer">Talk by Patrick McFadin</a></li>
+</ol>
+
+  </article>
+
+</div>
 
     </div>
 

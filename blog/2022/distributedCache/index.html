@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Distributed Cache</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Caching in a distributed environment" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +40,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/distributedCache/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +74,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +105,103 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Distributed Cache</h1>
+    <p class="post-meta">January 10, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Placing a cache between the web server and database decreases the latency. In systems like Facebook, Twitter the requests per second (RPS) may be as high as 500 million/sec. This type of environment requires high availability, high performance, low latency cache.</p>
+
+<hr>
+
+<h2 id="architecture">Architecture</h2>
+
+<p>We can have two types of architecture:</p>
+<ol>
+  <li>
+<strong>Co-located cache:</strong> Each web server has an in-built cache that interacts with DB.
+    <ul>
+      <li>Cache scaling is dependent on the number of webservers</li>
+      <li>Each web server has a limited view of the database restricted to its cache</li>
+    </ul>
+  </li>
+  <li>
+<strong>Dedicated Cache Cluster:</strong> Webservers interact with a Cache cluster that in turn interacts with DB.
+    <ul>
+      <li>This scales well as the caches can be added or removed from the cluster, independent of web servers.</li>
+    </ul>
+  </li>
+</ol>
+
+<blockquote>
+  <p><em><code class="language-plaintext highlighter-rouge"> Dedicated Cache Cluster</code></em> is a scalable solution for a distributed cache</p>
+</blockquote>
+
+<div>
+    <img src="/assets/img/distCache/CacheCluster.png">
+</div>
+
+<hr>
+
+<h2 id="data-distribution">Data Distribution</h2>
+
+<p>Sharding the data in the cache cluster is an effective way to ensure that a single cache server is not overwhelmed by requests. The sharding ensures that the data is distributed across the cache servers. The data can be sharded based on request location, IP, etc. <strong><code class="language-plaintext highlighter-rouge">Consistent Hashing</code></strong> can be used to shard the data.</p>
+
+<p>For every incoming request, the key is hashed to find out the cache server it needs to be forwarded to. The web server also needs to keep track of the reconfiguration of shards. To manage this responsibility and isolate the webserver from cache changes, a <strong><code class="language-plaintext highlighter-rouge">cache client</code></strong> runs on every webserver. The cache client takes the requests, hashes them, and finds the cache server it should forward to.</p>
+
+<p><strong>Cache Client</strong></p>
+
+<ol>
+  <li>Cache client keeps track of all cache server</li>
+  <li>It communicates with Cache Server through UDP/TCP protocol</li>
+  <li>It performs the hashing for every incoming request</li>
+</ol>
+
+<p>To keep track of all the cache servers, configuration services like <strong><code class="language-plaintext highlighter-rouge"> Zookeeper</code></strong> can be used. Zookeeper tracks every active cache client by heartbeat messages.</p>
+
+<div>
+    <img src="/assets/img/distCache/CacheServer.png">
+</div>
+
+<hr>
+<h2 id="availability">Availability</h2>
+
+<p>To achieve availability, we can replicate every cache server. Those replicas can share the <code class="language-plaintext highlighter-rouge">get</code> requests load, while the <code class="language-plaintext highlighter-rouge">put</code> request is only forwarded to the leader. The leader selection and discovery of replica server can be performed by a configuration service like: <code class="language-plaintext highlighter-rouge">zookeeper</code>.</p>
+
+<p>With replication we can have two types of setup:</p>
+<ol>
+  <li>
+<strong>Eventual Consistency</strong>:</li>
+  <li>
+<strong>Write to Leader, read from replicas</strong>:</li>
+</ol>
+
+<div>
+    <img src="/assets/img/distCache/Availability.png">
+</div>
+
+<hr>
+<h2 id="resources">Resources</h2>
+<ol>
+  <li><a href="https://timilearning.com/posts/mit-6.824/lecture-16-memcache-at-facebook/#architecture" target="_blank" rel="noopener noreferrer">MemCache at Facebook</a></li>
+</ol>
+
+  </article>
+
+</div>
 
     </div>
 

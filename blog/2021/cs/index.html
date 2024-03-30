@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Consistent Hashing</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2021/cs/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,106 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Consistent Hashing</h1>
+    <p class="post-meta">January 1, 2021</p>
+    <p class="post-tags">
+      <a href="/blog/2021"> <i class="fas fa-calendar fa-sm"></i> 2021 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>In the problem of load balancing, a hash function is used to assign the incoming BLOB to a server. A general approach would be to calculate the hash of the BLOB object and take modulus with the number of servers (n).</p>
+
+<p>We assume</p>
+
+<p>\(\beta\): hash of the BLOB object<br>
+\(n\): number of available servers<br>
+\(\zeta\): assigned server to the BLOB</p>
+
+\[\zeta = \beta \ \%\ n\]
+
+<p>The problem with this approach is that if a server is removed, the \(n\) changes and all the BLOBs need to be resassigned.</p>
+
+<hr>
+
+<h4 id="consistent-hashing">Consistent Hashing</h4>
+
+<div>
+    <img src="/assets/img/ConsistentHashing.png">
+    Figure: Blue disks denote the machines and red boxes denote the items. Arrows also show the machine to which each item is assigned.
+</div>
+<p><br></p>
+
+<p>The central idea is, we use a hash function that randomly maps both the BLOB and servers to a unit circle, usually \(2\pi\)  radians.</p>
+
+<p>For example, \(\zeta =\Phi \ \%\ 360\) (where \(\Phi\)  is hash of a BLOB or server’s identifier, like IP address or UUID). Each BLOB is then assigned to the next server that appears on the right of the BLOB on the circle.</p>
+
+<h4 id="failure">Failure</h4>
+
+<p>If a server fails and is removed from the circle, only the BLOBs that are mapped to the failed server need to be reassigned to the next server in the clockwise order. Likewise if the server is added to the unit circle, only the BLOBs mapped to that server need to be reassigned.</p>
+
+<hr>
+
+<h4 id="implementation">Implementation</h4>
+<p>A Binary Serch Tree (BST) is maintained with the server ID as nodes. To find the server for the BLOBs, tree traversal is performend \(O(log \ N)\).</p>
+
+<p>Let</p>
+
+<p>\(h_b(x)\): Hash function used for BLOB<br>
+\(h_s(x)\): Hash function user for server’s identity\</p>
+
+<p>Let \(\beta\) be the hash value of the blob such that:<br>
+\(\zeta = h_b(x) = \beta \ \% \ 360\)</p>
+
+<p>Let \(\phi\) be the hash value of the server such that:<br>
+\(\theta = h_s(x) = \phi \ \% \ 360\)</p>
+
+<p><strong>Inserting \(x\) into the cluster:</strong></p>
+<ul>
+  <li>To insert \(x\), find the successor of \(\zeta\) in the BST.</li>
+  <li>If \(\zeta\) is larger than all the Server IDs, then place the BLOB in the server with the smallest Server ID value.</li>
+</ul>
+
+<p><strong>Deleting \(x\) from the cluster:</strong></p>
+<ul>
+  <li>Find the successor of \(\zeta\) in the BST, remove the BLOB from the returned Server ID.</li>
+  <li>If \(\zeta\) has no successor, remove the BLOB from the server with the smallest Server ID.</li>
+</ul>
+
+<p><strong>Insert a server into cluster</strong></p>
+<ul>
+  <li>Move all the BLOBs from the server whose Server ID is successor of \(\theta\).</li>
+  <li>If \(\theta\) is the largest of the Server ID, move the BLOBs from the smallest of the Server IDs to \(\theta\)</li>
+</ul>
+
+<p><strong>Delete a server from cluster</strong></p>
+<ul>
+  <li>Find the successor of \(\theta\) in the BST, move the BLOBs from \(\theta\) into te successor server.</li>
+  <li>If \(\theta\)  doesn’t have a successor, move the BLOBs into the smallest of the server ID</li>
+</ul>
+
+<hr>
+
+<p>Resources</p>
+
+<ol>
+  <li><a href="https://en.wikipedia.org/wiki/Consistent_hashing" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Consistent_hashing</a></li>
+  <li><a href="https://people.csail.mit.edu/moitra/docs/6854lec3.pdf" target="_blank" rel="noopener noreferrer">MIT</a></li>
+</ol>
+
+  </article>
+
+</div>
 
     </div>
 

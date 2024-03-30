@@ -1,0 +1,955 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://mneetika.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mneetika.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2024-03-30T22:28:55+00:00</updated><id>https://mneetika.github.io/feed.xml</id><title type="html">Neetika</title><subtitle>A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+</subtitle><entry><title type="html">Design Twitter</title><link href="https://mneetika.github.io/blog/2022/twitter/" rel="alternate" type="text/html" title="Design Twitter" /><published>2022-01-21T00:00:00+00:00</published><updated>2022-01-21T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/twitter</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/twitter/"><![CDATA[<p><strong>Functional  Requirements</strong></p>
+
+<ol>
+  <li>Tweet</li>
+  <li>Re-Tweet</li>
+  <li>Follow</li>
+  <li>Search</li>
+</ol>
+
+<p><strong>Capacity Estimation</strong></p>
+
+<ul>
+  <li>150 Million Daily Active Users</li>
+  <li>350 Million Monthly Active Users</li>
+  <li>1.5 Billion Users Accounts</li>
+  <li>500 Million Tweets/day</li>
+</ul>
+
+<p><strong>User Categorization</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">famous</code>: millions of followers</li>
+  <li><code class="language-plaintext highlighter-rouge">live</code>: currently accessing twitter</li>
+  <li><code class="language-plaintext highlighter-rouge">active</code>: have accessed twitter recently eg. 3 hours</li>
+  <li><code class="language-plaintext highlighter-rouge">passive</code>: have accessed twitter not recently</li>
+  <li><code class="language-plaintext highlighter-rouge">inactive</code>: deleted account</li>
+</ul>
+
+<hr />
+
+<h3 id="1-user-onboarding">1. User Onboarding</h3>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/twitter/onboarding.png" /></center>
+</div>
+<p><br /></p>
+
+<p><strong>User Service</strong></p>
+<ul>
+  <li>User service helps in onboarding new users</li>
+  <li>The users information is stored in an RDBMS cluster</li>
+  <li>Information is also cached in Redis.
+    <ul>
+      <li>When a <code class="language-plaintext highlighter-rouge">GET</code> requests arrives to get users info by id it is retrieved from Redis</li>
+      <li>If information is not found, RDBMS is queried and Redis is updated</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h3 id="2-follower-follow">2. Follower-Follow</h3>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/twitter/followers.png" /></center>
+</div>
+<p><br /></p>
+
+<p><strong>Graph Service</strong></p>
+<ul>
+  <li>generates the graph of users and their followers</li>
+  <li>the graph is stored in the RDBMS
+    <ul>
+      <li>table: user(A) \(\rightarrow\) users who follow (A)</li>
+      <li>table: user(A) \(\rightarrow\) users (A) is following</li>
+    </ul>
+  </li>
+  <li>information is cached in Redis
+    <ul>
+      <li>When a <code class="language-plaintext highlighter-rouge">GET</code> request arrives for the list of followers, the information in Redis is looked up.</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h3 id="3-live-websocket-notification">3. Live Websocket Notification</h3>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/twitter/liveUsers.png" /></center>
+</div>
+<p><br /></p>
+
+<p><strong>Live Websocket Notification</strong></p>
+<ul>
+  <li>Users who are <code class="language-plaintext highlighter-rouge">Live</code> are connected using the <code class="language-plaintext highlighter-rouge">websocket</code>.</li>
+  <li>The events as they happen are pushed to Kafka.</li>
+  <li>Live Websocket Notification Service consumes messages from Kafka and notifies all the connected <code class="language-plaintext highlighter-rouge">Live</code> Users</li>
+</ul>
+
+<hr />
+
+<h3 id="4-tweet-service">4. Tweet Service</h3>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/twitter/tweet_service.png" /></center>
+</div>
+<p><br /></p>
+
+<p><strong>User Timeline</strong></p>
+<ul>
+  <li>the tweets that the user has posted</li>
+</ul>
+
+<p><strong>Home Timeline</strong></p>
+<ul>
+  <li>the combined view of tweets of the users that the user follows</li>
+</ul>
+
+<p><strong>Tweet Injestion Service</strong></p>
+<ul>
+  <li>User tweets are sent to injestion service</li>
+  <li>It is only responsible for tweet writes  not reads</li>
+  <li>If a media is associated with the tweet:
+    <ul>
+      <li>it contacts Short URL Service, which provides a unique URL</li>
+      <li>the media along with the short URL is forwarded to <code class="language-plaintext highlighter-rouge">Asset Service</code> that stores the media on <code class="language-plaintext highlighter-rouge">CDN</code></li>
+    </ul>
+  </li>
+  <li>Tweets are forwarded to Kafka. Live user connected with Websockets will receive the tweet.</li>
+</ul>
+
+<p><strong>Tweet Service</strong></p>
+<ul>
+  <li>provides APIs to read tweets</li>
+</ul>
+
+<p><strong>Tweet Processor</strong></p>
+<ul>
+  <li>for <code class="language-plaintext highlighter-rouge">active</code> users, <code class="language-plaintext highlighter-rouge">tweet processor service</code> caches the timeline in Redis cluster</li>
+  <li>To generate user timeline:
+    <ul>
+      <li>It talks to <code class="language-plaintext highlighter-rouge">Graph Service</code> to get the ids of all the followers</li>
+      <li>It talks to <code class="language-plaintext highlighter-rouge">User Service</code> to get the user details</li>
+      <li>It consumes tweets from Kafka and inserts it into the user timeline</li>
+    </ul>
+  </li>
+  <li>Finally the user timeline is cached in Redis cluster</li>
+</ul>
+
+<p><strong>Timeline Service</strong></p>
+<ul>
+  <li>Generates user’s timeline for <code class="language-plaintext highlighter-rouge">passive users</code>, <code class="language-plaintext highlighter-rouge">users whose timeline is not cached</code></li>
+  <li>For a user time:
+    <ul>
+      <li>list of all users that the user is following is fetched from <code class="language-plaintext highlighter-rouge">Graph Service</code></li>
+      <li>The <code class="language-plaintext highlighter-rouge">user service</code> provides details about the users.</li>
+      <li>if any media is associated with the tweet, <code class="language-plaintext highlighter-rouge">Asset Service</code> is contacted to retreive that media</li>
+      <li><code class="language-plaintext highlighter-rouge">Tweet Service</code> provides the tweets of the users that the user is following</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h3 id="tweet-read-flow">Tweet Read Flow</h3>
+
+<p><strong>Active Users</strong></p>
+
+<ul>
+  <li>Let <code class="language-plaintext highlighter-rouge">U1</code> is followed by <code class="language-plaintext highlighter-rouge">U2, U3, U4</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">U1</code> tweets <code class="language-plaintext highlighter-rouge">t1</code> with tweet id <code class="language-plaintext highlighter-rouge">t_id: 105</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Tweet Processor Service</code> queries Redis
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">t1</code> is inserted in the timeline of <code class="language-plaintext highlighter-rouge">U2, U3, U4</code></li>
+    </ul>
+  </li>
+</ul>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/twitter/active_users_read.png" /></center>
+</div>
+<p><br /></p>]]></content><author><name></name></author><category term="System Design" /><summary type="html"><![CDATA[Functional Requirements]]></summary></entry><entry><title type="html">Design Tiny URL</title><link href="https://mneetika.github.io/blog/2022/tinyurl/" rel="alternate" type="text/html" title="Design Tiny URL" /><published>2022-01-20T00:00:00+00:00</published><updated>2022-01-20T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/tinyurl</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/tinyurl/"><![CDATA[<h3 id="url-length">URL Length</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">[a-z][A-Z][0-9] = 62 characters</code></li>
+  <li>Let the length of each URL as <code class="language-plaintext highlighter-rouge">7</code>
+    <ul>
+      <li>Total \(7^{62}\) ~ <code class="language-plaintext highlighter-rouge">3.5 Trillion</code> URLs</li>
+    </ul>
+  </li>
+</ul>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/tinyurl/architecture.png" /></center>
+</div>
+<p><br /></p>]]></content><author><name></name></author><category term="System Design" /><summary type="html"><![CDATA[URL Length]]></summary></entry><entry><title type="html">Design Collabrative Editing</title><link href="https://mneetika.github.io/blog/2022/collabedit/" rel="alternate" type="text/html" title="Design Collabrative Editing" /><published>2022-01-18T00:00:00+00:00</published><updated>2022-01-18T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/collabedit</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/collabedit/"><![CDATA[<h2 id="operation-tranformation">Operation Tranformation</h2>
+
+<p>Operational transformation (OT) is a technology for supporting a range of collaboration functionalities in advanced collaborative software systems. OT was originally invented for <code class="language-plaintext highlighter-rouge">consistency maintenance</code> and <code class="language-plaintext highlighter-rouge">concurrency control</code> in collaborative editing of plain text documents</p>
+
+<h3 id="system-architecture">System Architecture</h3>
+
+<ul>
+  <li>each client has their own copy of the document</li>
+  <li>clients operate on their local copies in a lock-free, non-blocking manner</li>
+  <li>the changes are then propagated to the rest of the clients</li>
+  <li>When a client receives the changes propagated from another client, it typically transforms the changes before executing them;
+    <ul>
+      <li>the transformation ensures that application-dependent consistency criteria (invariants) are maintained by all sites</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="basics">Basics</h3>
+
+<p>Given a text document with a string “abc” replicated at two collaborating sites; and two concurrent operations:</p>
+<ol>
+  <li>O1 = Insert[0, “x”] (to insert character “x” at position “0”)</li>
+  <li>O2 = Delete[2, “c”] (to delete the character “c” at position “2”)</li>
+</ol>
+
+<p>Suppose the two operations are executed in the order of O1 and O2 (at site 1)</p>
+
+<ul>
+  <li>After executing O1, the document becomes “xabc”</li>
+  <li>To execute O2 after O1, O2 must be transformed against O1 to become: <code class="language-plaintext highlighter-rouge">O2' = Delete[3, "c"]</code>, whose positional parameter is incremented by one due to the insertion of one character “x” by O1</li>
+  <li>Executing O2’ on “xabc” deletes the correct character “c” and the document becomes “xab”. However, if O2 is executed without transformation, it incorrectly deletes character “b” rather than “c”</li>
+</ul>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/collabdoc/OT.png" /></center>
+</div>
+<p><br /></p>
+
+<hr />
+
+<h2 id="architecture">Architecture</h2>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/collabdoc/Architecture.png" /></center>
+</div>
+<p><br /></p>]]></content><author><name></name></author><category term="System Design" /><summary type="html"><![CDATA[Operation Tranformation]]></summary></entry><entry><title type="html">Design Booking Service</title><link href="https://mneetika.github.io/blog/2022/booking/" rel="alternate" type="text/html" title="Design Booking Service" /><published>2022-01-18T00:00:00+00:00</published><updated>2022-01-18T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/booking</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/booking/"><![CDATA[<h2 id="airbnb">AirBnB</h2>
+
+<p><strong>Functional Requirements</strong></p>
+
+<p>Hotels</p>
+<ul>
+  <li>onboarding</li>
+  <li>updates</li>
+  <li>bookings</li>
+</ul>
+
+<p>User</p>
+<ul>
+  <li>Search</li>
+  <li>Book</li>
+  <li>Check Bookings</li>
+</ul>
+
+<p><strong>Non Functional Requirements</strong></p>
+<ul>
+  <li>Low Latency</li>
+  <li>High Availability</li>
+  <li>High Consistency</li>
+</ul>
+
+<hr />
+<h3 id="architecture">Architecture</h3>
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/booking/architecture.png" /></center>
+</div>
+<p><br /></p>
+
+<hr />
+<h3 id="hotel-management">Hotel Management</h3>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/booking/hotel.png" /></center>
+</div>
+<p><br /></p>
+
+<p><strong>Hotel Service</strong></p>
+<ul>
+  <li>Hotels can register themselves on the platform using hotel service</li>
+  <li>The hotel data is highly related. It can be stored in an RDBMS cluster</li>
+  <li>Media-related information like pictures can be stored in CDN. The URL for the CDN can be stored in the RDBMS database</li>
+</ul>
+
+<p>The updates by the hotel service are sent to the Kafka queue. For example, if a room is added to a hotel, the update is sent to Kafka, where consumers consume that message. One of the consumers is <code class="language-plaintext highlighter-rouge">Search Consumer</code> service.</p>
+
+<p><strong>Serch Consumer Service</strong></p>
+
+<ul>
+  <li>it consumes messages from Kafka queue regarding updates from the hotel service</li>
+  <li>pushes the messages from Kafka to Elastic Seach Cluster</li>
+</ul>
+
+<p><strong>Search Service</strong></p>
+
+<ul>
+  <li>Search service sits on top of Elastic Search Cluster</li>
+  <li>provides an interface for users to search the hotels</li>
+</ul>
+
+<hr />
+
+<h3 id="customer">Customer</h3>
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/booking/customer.png" /></center>
+</div>
+<p><br /></p>
+
+<p><strong>Booking Service</strong></p>
+<ul>
+  <li>Sits on top of RDBMS database</li>
+  <li>Interacts with Payment service for payments related operations</li>
+  <li>the booking messages are sent to Kafka, which are picked up by Search Consumer services and Elastic Search
+    <ul>
+      <li>When a user books a room, it should not be visible to other users</li>
+      <li>When the booking is completed by the user, it is notified to Kafka</li>
+      <li><code class="language-plaintext highlighter-rouge">Service Consumer Service</code> consumes that message and updates the <code class="language-plaintext highlighter-rouge">Elastic Search Cluster</code> and removes the availability of the room</li>
+      <li>When the user queries <code class="language-plaintext highlighter-rouge">Search Service</code>, the booked room will not be listed in the availability list</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Archival Service</strong></p>
+<ul>
+  <li>The bookings that have been completed are moved out of RDBMS and stored in the <code class="language-plaintext highlighter-rouge">Cassandra Cluster</code></li>
+</ul>
+
+<p><strong>Notification Service</strong></p>
+<ul>
+  <li>It provides notification to the users based on the booking operation for eg: <code class="language-plaintext highlighter-rouge">canceled</code>, <code class="language-plaintext highlighter-rouge">booked</code>, <code class="language-plaintext highlighter-rouge">payment success</code>, etc.</li>
+</ul>
+
+<p><strong>Booking Management Service</strong></p>
+<ul>
+  <li>Provides information about the booking history, status</li>
+</ul>
+
+<hr />
+
+<h3 id="apis">APIs</h3>
+
+<ol>
+  <li><strong>POST /hotel</strong>
+    <ul>
+      <li>add hotel to db</li>
+    </ul>
+  </li>
+  <li><strong>GET /hotel/id</strong>
+    <ul>
+      <li>retrieve hotels from db</li>
+    </ul>
+  </li>
+  <li><strong>PUT /hotel/id</strong>
+    <ul>
+      <li>update hotel in db</li>
+    </ul>
+  </li>
+  <li><strong>PUT /hotel/id/rooms/id</strong>
+    <ul>
+      <li>insert rooms for hotel in db</li>
+    </ul>
+  </li>
+</ol>
+
+<hr />
+
+<h3 id="db-schema">DB Schema</h3>
+
+<h4 id="1-hotel-db">1. Hotel DB</h4>
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/booking/db_schema.png" /></center>
+</div>
+<p><br /></p>
+
+<ul>
+  <li>hotel \(\rightarrow\) [ <font color="red">hotel_id</font>, name, <font color="red">locality_id</font>, description, original_images, display_images, is_active ]</li>
+  <li>hotel_facilities \(\rightarrow\) [ <font color="red">id</font>, <font color="red">hostel_id</font>, <font color="red">facility_id</font>, is_active ]</li>
+  <li>locality \(\rightarrow\) [ <font color="red">locality_id</font>, <font color="red">city_id</font>, <font color="red">state_id</font>, zipcode, is_active ]</li>
+  <li>rooms \(\rightarrow\) [ <font color="red">room_id</font>, <font color="red">hotel_id</font>, display_name, is_active, quantity, price_min, price_max ]</li>
+  <li>rooms_facilities \(\rightarrow\) [ <font color="red">id</font>, <font color="red">room_id</font>, <font color="red">facility_id</font>, is_active ]</li>
+  <li>facilities \(\rightarrow\) [<font color="red">id</font>, display_name ]</li>
+</ul>
+
+<p><br />
+<br /></p>
+
+<h4 id="2-booking-db">2. Booking DB</h4>
+
+<ul>
+  <li>available_rooms \(\rightarrow\) [ <font color="red">room_id</font>, date, initial_qty, available_qty]</li>
+  <li>booking_id \(\rightarrow\) [<font color="red">booking_id</font>, <font color="red">room_id</font>, <font color="red">user_id</font>, start_data, end_date, no_of_rooms, status, <font color="red">invoice_id</font>]</li>
+  <li>status \(\rightarrow\) [Reserved, Booked, Cancelled, Completed]</li>
+  <li></li>
+</ul>
+
+<hr />
+
+<h3 id="movie-ticket-booking-system">Movie Ticket Booking system</h3>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">enum</span> <span class="n">SeatType</span> <span class="p">{</span>
+    <span class="n">AC</span><span class="p">,</span>
+    <span class="n">NON_AC</span><span class="p">,</span>
+    <span class="n">LOUNGE</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Theater</span><span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Screen</span><span class="o">&gt;</span> <span class="n">screens</span><span class="p">;</span>
+    <span class="n">City</span> <span class="n">city</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">theater_id</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Screen</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">screen_id</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">total_seats</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Seats</span><span class="o">&gt;</span> <span class="n">seats</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Seats</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">seat_no</span><span class="p">;</span>
+    <span class="n">SeatType</span> <span class="n">type</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Screening</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">screen_id</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">movie_id</span><span class="p">;</span>
+    <span class="n">TimeSlot</span> <span class="n">slot</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Movie</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">movie_id</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">description</span><span class="p">;</span>
+<span class="p">};</span></code></pre></figure>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/booking/ticket.png" /></center>
+</div>
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/booking/MovieTicketDB.png" /></center>
+</div>
+<p><br /></p>]]></content><author><name></name></author><category term="System Design" /><summary type="html"><![CDATA[AirBnB]]></summary></entry><entry><title type="html">SSTable</title><link href="https://mneetika.github.io/blog/2022/sstable/" rel="alternate" type="text/html" title="SSTable" /><published>2022-01-17T00:00:00+00:00</published><updated>2022-01-17T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/sstable</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/sstable/"><![CDATA[<p><code class="language-plaintext highlighter-rouge">Sorted String Tables</code> are immutable files that contain arbitrary, <code class="language-plaintext highlighter-rouge">sorted key-value pairs</code>, persisted on the disk. When <code class="language-plaintext highlighter-rouge">Memtables</code> are flushed from memory to disk, they are stored as SSTables.</p>
+
+<p>SSTables support fast sequential read/writes. As SSTables are sorted sequences of key-value pairs, an index file is maintained for fast retrieval. To retrieve data from SSTable, a binary search can be performed on the index to locate the offset of the value. The index partition is also stored in the disk.</p>
+
+<div>
+    <center><img src="/assets/img/sstable/sstable.png" /></center>
+</div>
+
+<p><br /></p>
+
+<p>Example:</p>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/sstable/table.png" /></center>
+</div>
+<p><br /></p>
+
+<p>For fast read, a <code class="language-plaintext highlighter-rouge">partition index summary</code> file is maintained which maps the key range to the offsets.</p>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/sstable/partition.png" /></center>
+</div>
+<p><br /></p>
+
+<p>Recently accessed SSTables offsets are stored in cache:<code class="language-plaintext highlighter-rouge">key cache</code>. 
+It maps <code class="language-plaintext highlighter-rouge">Key</code> \(\rightarrow\) <code class="language-plaintext highlighter-rouge">Byte offset</code></p>
+
+<hr />
+
+<h3 id="reads">Reads</h3>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/sstable/read.png" /></center>
+</div>
+<p><br /></p>
+
+<ul>
+  <li>When a read request arrives, it is first checked against the <code class="language-plaintext highlighter-rouge">Memtable</code>, if found the value is returned</li>
+  <li>Lookup in <code class="language-plaintext highlighter-rouge">key cache</code>, if found in key cache the disk is read for the specified offset, and value is returned.</li>
+  <li>Perform binary search lookup in <code class="language-plaintext highlighter-rouge">primary index summary</code> to find the offset. The offset will give the location of the <code class="language-plaintext highlighter-rouge">index file</code>. From the <code class="language-plaintext highlighter-rouge">index file</code>, the disk offset can be found. The disk is read for that offset and the value is returned.</li>
+</ul>
+
+<hr />
+
+<h2 id="compactions">Compactions</h2>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/sstable/compaction.png" /></center>
+</div>
+<p><br /></p>
+
+<p>As SSTables are immutable, they can grow in size to a very huge amount. <code class="language-plaintext highlighter-rouge">Compaction</code> helps compress the SSTables.</p>
+
+<p>Compaction is the operation of merging multiple related SSTables into a single new one. During compaction, the data in SSTables are merged:</p>
+<ul>
+  <li>The keys are merged</li>
+  <li>columns are combined</li>
+  <li>obsolete values are discarded</li>
+  <li>a new index is created</li>
+</ul>
+
+<p>After compaction is performed the data is written into a new SSTable and the older SSTables are deleted from the disk.</p>
+
+<p><br /></p>
+<div>
+    <center><img src="/assets/img/sstable/compaction_flow.png" /></center>
+</div>
+<p><br /></p>
+
+<hr />
+
+<h2 id="resources">Resources</h2>
+
+<ol>
+  <li><a href="https://www.igvita.com/2012/02/06/sstable-and-log-structured-storage-leveldb/">Google SSTables</a></li>
+</ol>]]></content><author><name></name></author><category term="Distributed Systems Components" /><summary type="html"><![CDATA[Persistance Storage]]></summary></entry><entry><title type="html">Cassandra</title><link href="https://mneetika.github.io/blog/2022/cassandra/" rel="alternate" type="text/html" title="Cassandra" /><published>2022-01-16T00:00:00+00:00</published><updated>2022-01-16T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/cassandra</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/cassandra/"><![CDATA[<p>Cassandra is a key/value store database. It provides <code class="language-plaintext highlighter-rouge">Availablity</code> and <code class="language-plaintext highlighter-rouge">Partial Fault Tolerance</code> from the CAP. Cassandra combines the <code class="language-plaintext highlighter-rouge">BigTable</code> data model and <code class="language-plaintext highlighter-rouge">Dynamo</code> system architecture.</p>
+
+<ul>
+  <li>The database is <code class="language-plaintext highlighter-rouge">NoSQL, wide-column, key-value</code> like BigTable.</li>
+  <li>It’s `key/value store, highly available like Dynamo.</li>
+</ul>
+
+<hr />
+
+<h2 id="fully-replicated">Fully replicated</h2>
+
+<p>Cassandra is a fully replicated, highly available, partial fault tolerance database. The data from each node is replicated to other nodes. The number of nodes to which data is replicated is called the <code class="language-plaintext highlighter-rouge">replication factor</code>. Generally, the replication factor is 3.</p>
+
+<p>When a client sends a <code class="language-plaintext highlighter-rouge">put(K,V)</code> operation</p>
+<ul>
+  <li>the data is replicated in the local data center as well as the other data center. The data is replicated on nodes in both the data center.</li>
+  <li>replication factor can also be set per data centers</li>
+</ul>
+
+<div>
+    <center><img src="/assets/img/cassandra/server.png" /></center>
+</div>
+
+<hr />
+
+<h3 id="write">Write</h3>
+
+<ul>
+  <li>Client sends <code class="language-plaintext highlighter-rouge">put(K,V)</code> to the node.</li>
+  <li>The request is written into <code class="language-plaintext highlighter-rouge">commit log</code> for crash recovery</li>
+  <li>The values are inserted in the in-memory <code class="language-plaintext highlighter-rouge">memtable</code></li>
+  <li>Memtables are periodically flushed to the file system in the form of <code class="language-plaintext highlighter-rouge">SSTables</code></li>
+</ul>
+
+<div>
+    <img src="/assets/img/bigTable/BigTableWrite.png" />
+</div>
+
+<hr />
+
+<h2 id="write-with-partitioning">Write with Partitioning</h2>
+
+<ul>
+  <li>For writes, it is necessary that a single node in the cluster is not overwhelmed with write requests, while other nodes are idle.</li>
+  <li><code class="language-plaintext highlighter-rouge">Cassandra maintains a primary key for the table</code>. This primary key determines to which node the write request will be sent.</li>
+  <li>Each node is assigned a range, for which it stores the data. This node is called <code class="language-plaintext highlighter-rouge">primary</code>. The primary is also responsible for replicating the data to other nodes as per the replication factor.</li>
+  <li>For consistency and load distribution, the primary key is hashed either using MD5 or murmur3 hash.</li>
+  <li>The hashed key is then used with <code class="language-plaintext highlighter-rouge">consistent hashing</code> to determine the node.</li>
+  <li><code class="language-plaintext highlighter-rouge">The data is first sent to the primary node and then replicated to other nodes</code> as per the replication factor.</li>
+</ul>
+
+<p><br /></p>
+<div>
+    <img src="/assets/img/cassandra/table.png" />
+</div>
+<p><br /></p>
+
+<p><br /></p>
+<div>
+    <img src="/assets/img/cassandra/hashed_pk.png" />
+</div>
+<p><br /></p>
+
+<p><br /></p>
+<div>
+    <img src="/assets/img/cassandra/token_ring.png" />
+</div>
+<p><br /></p>
+
+<hr />
+
+<h2 id="read">Read</h2>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Client can connect to any node in the cluster</code></li>
+  <li><code class="language-plaintext highlighter-rouge">All nodes are aware of each other in the cluster</code></li>
+  <li><code class="language-plaintext highlighter-rouge">All nodes know which node is responsible for the key range along with its replica</code></li>
+  <li>If the client connects to a node that is neither primary nor the replica of primary, the node forwards the read request based on the hashed key to the responsible primary node and its replica</li>
+</ul>
+
+<p><br /></p>
+<div>
+    <img src="/assets/img/cassandra/read.png" />
+</div>
+<p><br /></p>
+
+<ul>
+  <li>Node 4 receives the client request for a read</li>
+  <li>If node 4 is not responsible for the key range, it is aware that the requested key has primary as node 1</li>
+  <li>request is forwarded to node 1 along with the replicas responsible for the key</li>
+  <li>node 4 waits for the quorum</li>
+  <li>once the quorum is received, it forwards data to the client</li>
+</ul>
+
+<hr />
+
+<h3 id="consistency-level">Consistency Level</h3>
+
+<p>For every read request, read repair is performed. It can be done across data centers as well</p>
+
+<ul>
+  <li><strong>ONE</strong> :
+    <ul>
+      <li>the data is returned to client from a single node.</li>
+      <li>very fast but high probability of stale data</li>
+    </ul>
+  </li>
+  <li><strong>QUORUM</strong>:
+    <ul>
+      <li>&gt; 51% replicas ack</li>
+      <li>high consistency as there is atleast one single node that has seen the latest write</li>
+    </ul>
+  </li>
+  <li><strong>LOCAL QUORUM</strong>:
+    <ul>
+      <li>&gt; 51% replicas ack in local Data Center</li>
+    </ul>
+  </li>
+  <li><strong>LOCAL_ONE</strong>:
+    <ul>
+      <li>&gt; read repair only in local Data Center</li>
+    </ul>
+  </li>
+  <li><strong>ALL</strong>:
+    <ul>
+      <li>Ack from all nodes</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<p><strong><code class="language-plaintext highlighter-rouge">Cassandra</code></strong> combines the Hash and key range. It has a <strong><code class="language-plaintext highlighter-rouge"> compound primary key</code></strong>, consisting of several columns. The first part is used as input to the hash function, the other part of the key is used to sort the data in the partition.</p>
+
+<h2 id="resources">Resources</h2>
+
+<ol>
+  <li><a href="https://www.youtube.com/watch?v=B_HTdrTgGNs&amp;ab_channel=CernerEng">Talk by Patrick McFadin</a></li>
+</ol>]]></content><author><name></name></author><category term="Distributed Systems Components" /><summary type="html"><![CDATA[Key/Value Store]]></summary></entry><entry><title type="html">Design Web Crawler</title><link href="https://mneetika.github.io/blog/2022/webcrawler/" rel="alternate" type="text/html" title="Design Web Crawler" /><published>2022-01-15T00:00:00+00:00</published><updated>2022-01-15T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/webcrawler</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/webcrawler/"><![CDATA[<p>Features to support:</p>
+
+<ol>
+  <li>Politeness/crawl rate: respect the upper limit of visit frequency of sites</li>
+  <li>DNS Query</li>
+  <li>Distributed Crawling</li>
+  <li>Priority Crawling</li>
+  <li>Duplication Crawling</li>
+</ol>
+
+<hr />
+
+<h3 id="capacity-estimation">Capacity Estimation</h3>
+
+<p>Consider total web pages: <code class="language-plaintext highlighter-rouge">15 Billion</code></p>
+
+<p>We can crawl those pages in one month:</p>
+<blockquote>
+  <p>15 billion * (4 weeks * 7 days * 86400 seconds) ~ 6200 pages/sec</p>
+</blockquote>
+
+<ul>
+  <li>Assume the size of each page: <code class="language-plaintext highlighter-rouge">100 KB</code></li>
+  <li>Metadata size: <code class="language-plaintext highlighter-rouge">500 bytes per page</code></li>
+</ul>
+
+<p>Total size:</p>
+<blockquote>
+\[15 * 10^9 pages * (100 * 10^3 + 500) bytes \rightarrow 1.5 * 10^{15} \rightarrow 1.5 PB\]
+</blockquote>
+
+<p>We assume that our storage is only <code class="language-plaintext highlighter-rouge">70%</code> consumed</p>
+
+<blockquote>
+  <p>1.5 PB / 0.7 ~ 2.14 PB</p>
+</blockquote>
+
+<hr />
+
+<h3 id="high-level-design">High-Level Design</h3>
+
+<ol>
+  <li>Pick a URL from the unvisited URL list</li>
+  <li>Determine the IP address of the URL</li>
+  <li>Connect with the host and download the content</li>
+  <li>Parse the content and filter the URLs</li>
+  <li>Add the new URLs to the unvisited list</li>
+  <li>Process the downloaded content: store or index its content</li>
+</ol>
+
+<hr />
+
+<h2 id="architecture">Architecture</h2>
+
+<p><br />
+<br /></p>
+
+<div>
+    <center><img src="/assets/img/webcrawler/architecture.png" /></center>
+</div>
+
+<hr />
+
+<h2 id="services">Services</h2>
+
+<ol>
+  <li>
+    <p><strong>Seed URLs</strong>: The list of URLs from which the web crawler will start to crawl the web pages. This can be a list of highly visited sites like yahoo, google, CNN, etc.</p>
+  </li>
+  <li>
+    <p><strong>URL Frontier</strong>: URL Frontier contains the list of URLs that are not visited yet by the crawler.</p>
+  </li>
+  <li><strong>Fetcher+Renderer</strong>:
+    <ul>
+      <li>Multithreaded set of a cluster that fetches the web pages from the web.</li>
+      <li>Pages are generally not static. There are generally scripts like JS, Ajax on the web pages. Therefore a renderer is required that executes these scripts on the server-side to generate the complete webpage.</li>
+    </ul>
+  </li>
+  <li><strong>DNS Resolver</strong>:
+    <ul>
+      <li>To fetch a document, Hostnames need to be mapped to IP address.</li>
+      <li>For the IP lookup instead of sending a request to an external DNS server, an internal resolver can be used to reduce the latency.</li>
+    </ul>
+  </li>
+  <li><strong>Document Input Stream</strong>:
+    <ul>
+      <li>Threads forward the downloaded document to Document Input Stream.</li>
+      <li>Document is cached in a <code class="language-plaintext highlighter-rouge">Redis</code> cluster for further processing</li>
+      <li>The document is processed for duplication checks and compressed and stored in a database like <code class="language-plaintext highlighter-rouge">BigTable</code></li>
+      <li><strong>Document De-dupe Module</strong>:
+        <ul>
+          <li>The document is checked whether its content has been previously seen.</li>
+          <li>If the document is previously seen it is discarded and not stored.</li>
+          <li>If this is a fresh document, it is compressed and stored in the database.</li>
+          <li>Fingerprint mechanisms like <code class="language-plaintext highlighter-rouge">checksum</code> or <code class="language-plaintext highlighter-rouge">shingles</code> can be used to detect duplication</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><strong>URL Extractor</strong>:
+    <ul>
+      <li>A copy of the document from the <code class="language-plaintext highlighter-rouge">Redis</code> cache is fed to the extractor.</li>
+      <li>The extractor will parse the network protocol and extract all the links.</li>
+      <li>The links are converted to absolute URLs.</li>
+    </ul>
+  </li>
+  <li><strong>URL Filter</strong>:
+    <ul>
+      <li>The URL filter provides a customizable mechanism for controlling the URLs to be crawled.</li>
+      <li>The crawler can be restricted to crawl on certain formats like jpg, png, etc. while discarding formats like mp3, etc.</li>
+      <li>The robot exclusion protocol restricts the web pages for a crawler. This can be done by the URL filter.</li>
+    </ul>
+  </li>
+  <li><strong>URL De-dupe test</strong>:
+    <ul>
+      <li>Most of the pages contain URLs that are already seen by the crawler.</li>
+      <li>Already crawled URLs can be maintained in a data store based on the domain name.</li>
+      <li>The duplication test can be either done by checking the checksum instead of string comparison or using Bloom filters.</li>
+    </ul>
+  </li>
+</ol>
+
+<hr />
+
+<h2 id="prioritization-and-politeness">Prioritization and Politeness</h2>
+
+<p>The prioritization and politeness are implemented in the URL Frontier module as it provides the list of URLs to the fetchers. Priority of webpages can be decided by:</p>
+<ol>
+  <li>quality of the webpage</li>
+  <li>rate of change of webpage</li>
+</ol>
+
+<p>Spam webpages change their contents frequently that is why we also need to check the quality of the webpages. For a news page that updates content frequently, the crawler will need to recrawl the link every few minutes to incorporate any changes.</p>
+
+<h3 id="politeness">Politeness</h3>
+
+<ul>
+  <li>Crawler should ensure that it does not overwhelm the host’s server at any point in time</li>
+  <li>Single connection should be open between host and crawler</li>
+</ul>
+
+<div>
+    <center><img src="/assets/img/webcrawler/frontier.png" /></center>
+</div>
+
+<p><br /></p>
+
+<p>Two queues are maintained by the URL frontier.</p>
+
+<ul>
+  <li><strong>Front Queue</strong>:
+    <ul>
+      <li>They implement the prioritization.</li>
+      <li>Number of front queues depends on the prioritization. For now, we assume there are F front queues.</li>
+    </ul>
+  </li>
+  <li><strong>Back Queue</strong>:
+    <ul>
+      <li>They implement politeness.</li>
+      <li>The number of back queues depends upon the number of threads running in the fetcher. Every queue is mapped to one and only one thread.</li>
+      <li>Each back queue can contain URLs from a single domain only. This ensures that the thread responsible for that queue will open only one connection with the host.</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Biased Front Queues Selector</strong>:</p>
+<ul>
+  <li>The URLs are pushed from the front queue to the back queue by the selector. It is biased as it picks the highest priority URLs</li>
+</ul>
+
+<p><strong>Back Queue Table</strong>:</p>
+<ul>
+  <li>Back Queue table is maintained to map the Hostname with the queue number</li>
+  <li>When the back queue becomes empty, the biased front queues selector picks up URLs from a different domain and inserts them into the back queue. The queue table is updated with the new hostname.</li>
+</ul>
+
+<p><strong>Back Queue Heap</strong>:</p>
+<ul>
+  <li>Each back queue has a min-heap maintained.</li>
+  <li>The priority of the heap is according to the politeness (next visit time)
+    <ul>
+      <li>for every visit to the host by the crawler, it updates the next visit time according to the politeness and inserts it into a heap.</li>
+    </ul>
+  </li>
+  <li>When the fetcher is done with a URL it asks for the next URL from the Back queue selector. The back queue selector picks up the queue number from the min-heap whose time has to visit has elapsed.</li>
+  <li>This helps the crawler in respecting the politeness of the host</li>
+</ul>]]></content><author><name></name></author><category term="System Design" /><summary type="html"><![CDATA[Features to support:]]></summary></entry><entry><title type="html">Kafka</title><link href="https://mneetika.github.io/blog/2022/messagingq/" rel="alternate" type="text/html" title="Kafka" /><published>2022-01-14T00:00:00+00:00</published><updated>2022-01-14T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/messagingq</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/messagingq/"><![CDATA[<p>Messaging queue manages the logs or messages published at a very large rate.</p>
+
+<hr />
+
+<h2 id="publisher-subscriber-model">Publisher-Subscriber Model</h2>
+
+<p><strong>Publishers</strong>: Publish message to a particular topic. Instead of sending it directly to the queue, they publish it to topic.</p>
+
+<p><strong>Subscribers</strong>: Consumers can consume message by subscribing to a topic. Many consumers can subscribe to the same topic. The message is sent to all the subscribers.</p>
+
+<div>
+    <center><img src="/assets/img/messagingq/messageQ.png" /></center>
+</div>
+
+<hr />
+
+<h2 id="kafka">Kafka</h2>
+<p>Kafka works on <code class="language-plaintext highlighter-rouge">publisher-subscriber</code> model. It takes in the messages sent by Producers and stores them reliably on a center cluster, and allows the messages to be received by the consumers.</p>
+
+<div>
+    <center><img src="/assets/img/messagingq/kafkaCluster.png" /></center>
+</div>
+
+<p><br /></p>
+
+<ul>
+  <li>Kafka stores all the messages on disk in an append-only log.</li>
+  <li><strong>Brokers</strong>: Kafka servers are called brokers. They are responsible for receiving messages, storing on disk and sending the messages.</li>
+  <li><strong>Record</strong>: A record is a message that has: <code class="language-plaintext highlighter-rouge">key, value, timestamp, optional metadata headers</code>.</li>
+  <li><strong>Topics</strong>: Messages are divided into categories called as topics. Topics are unique for a cluster.
+    <ul>
+      <li>Every message that kafka receives is associated with a topic</li>
+      <li>consumers subscribe to a topic and are notified whenever a new message is received by kafka</li>
+      <li>Multiple consumers can subscribe to the same topic</li>
+    </ul>
+  </li>
+  <li>The messages are not deleted as soon as they are consumed. Instead they are retained for some configurable amount of time.</li>
+</ul>
+
+<div>
+    <center><img src="/assets/img/messagingq/pubSub.png" /></center>
+</div>
+
+<ul>
+  <li><strong>Cluster</strong>: Set of one or more servers, responsible for running a kafka broker</li>
+  <li><strong>Zookeeper</strong>: Configuration service that maintains metadata about kafka servers</li>
+</ul>
+
+<hr />
+
+<p>Resources</p>
+<ol>
+  <li><a href="https://www.youtube.com/watch?v=ElilYxUOjOQ&amp;ab_channel=Devoxx">Kafka</a></li>
+</ol>]]></content><author><name></name></author><category term="Distributed Systems Components" /><summary type="html"><![CDATA[Distributed Messaging Queue]]></summary></entry><entry><title type="html">Service Discovery</title><link href="https://mneetika.github.io/blog/2022/servicediscovery/" rel="alternate" type="text/html" title="Service Discovery" /><published>2022-01-13T00:00:00+00:00</published><updated>2022-01-13T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/servicediscovery</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/servicediscovery/"><![CDATA[<p>When a client wants to make a request, it has to know which node it should connect to. As partitions are rebalanced, the assignment of partitions to node changes. This problem is called <em>service discovery</em>.</p>
+
+<hr />
+<h2 id="routing-tier">Routing tier</h2>
+
+<p>Many applications have a routing tier, which receives requests from clients. This routing tier is partition aware and forwards the request to the appropriate node. The <strong><code class="language-plaintext highlighter-rouge">ZooKeeper</code></strong> configuration service can be used to track the nodes along with the keys they serve.</p>
+
+<div>
+    <center><img src="/assets/img/serviceDiscovery/configService.png" /></center>
+</div>]]></content><author><name></name></author><category term="Distributed Systems Components" /><summary type="html"><![CDATA[Identify which node to connect]]></summary></entry><entry><title type="html">Sharding</title><link href="https://mneetika.github.io/blog/2022/sharding/" rel="alternate" type="text/html" title="Sharding" /><published>2022-01-12T00:00:00+00:00</published><updated>2022-01-12T00:00:00+00:00</updated><id>https://mneetika.github.io/blog/2022/sharding</id><content type="html" xml:base="https://mneetika.github.io/blog/2022/sharding/"><![CDATA[<p>Sharding of data is done to achieve <em>Scalability</em>. Sharding means that each piece of data belongs to exactly one shard only. Sharding and replication are usually combined. A node may store more than one shard.</p>
+
+<div>
+    <center><img src="/assets/img/shard/replication_sharding.png" /></center>
+</div>
+
+<hr />
+
+<h3 id="sharding-by-key-range">Sharding by key range</h3>
+<p>One way of sharding is to assign nodes a continuous range of keys. All the reads/writes pertaining to a key range are transferred to a single node. This sharding technique is used by <strong><code class="language-plaintext highlighter-rouge">BigTable, HBase</code></strong>.</p>
+
+<p>Within each partition, we can keep keys in sorted order. This helps in range scan queries. The keys can be treated as a concatenated index in order to fetch serval related records in one query.</p>
+
+<p>For example, getting a range of data from the sensor can be done by designing the key as <em>(year-month-day-hour-minute-second)</em></p>
+
+<div>
+    <center><img src="/assets/img/shard/key_range.png" /></center>
+</div>
+
+<p><br />
+<br /></p>
+
+<p><strong>Hotspots</strong></p>
+<ul>
+  <li>This can still create hotspots. Suppose a group of sensors is writing values to the database. If the key is designed according to the time then, only one partition will receive all the writes and other partitions will be idle.</li>
+  <li>To overcome the problem the key can be prefixed with sensor id and that sensor id can be distributed across the partitions</li>
+</ul>
+
+<hr />
+
+<h3 id="sharding-by-hash-of-key">Sharding by Hash of Key</h3>
+
+<p>A hash function emits a random output even if the inputs are related. This makes is it perfect for keys distribution. The key is passed to a hash function. The resultant hash then determines the partition to which it should be assigned</p>
+
+<p>Due to randomization, the speed-up of range queries is lost</p>
+
+<p><strong><code class="language-plaintext highlighter-rouge">Cassandra</code></strong> combines the Hash and key range. It has a <strong><code class="language-plaintext highlighter-rouge">compound primary key</code></strong>, consisting of several columns. The first part is used as input to the hash function, the other part of the key is used to sort the data in the partition.</p>
+
+<p>This can be utilized in scenarios like social networking sites. The key can consist of <em>(user_id, update_timestamp)</em>. The data is distributed among partitions using the <em>user_id</em>. Within the partition, the data is sorted according to the <em>update_timestamp</em>.</p>]]></content><author><name></name></author><category term="Distributed Systems Components" /><summary type="html"><![CDATA[Partitioning data]]></summary></entry></feed>

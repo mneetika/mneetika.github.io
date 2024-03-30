@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | STL functions</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2020/cpp/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,49 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">STL functions</h1>
+    <p class="post-meta">May 23, 2020</p>
+    <p class="post-tags">
+      <a href="/blog/2020"> <i class="fas fa-calendar fa-sm"></i> 2020 </a>
+        ·  
+        <a href="/blog/category/C++">
+          <i class="fas fa-tag fa-sm"></i> C++</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <h3 id="copy">copy</h3>
+<p>Copies the elements in the range <code class="language-plaintext highlighter-rouge">[first, last)</code>, to another range begining at <code class="language-plaintext highlighter-rouge">d_first</code>.</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">InputIt</span><span class="p">,</span> <span class="k">class</span> <span class="nc">OutputIt</span><span class="p">&gt;</span>
+<span class="n">OutputIt</span> <span class="nf">copy</span><span class="p">(</span><span class="n">InputIt</span> <span class="n">first</span><span class="p">,</span> <span class="n">InputIt</span> <span class="n">last</span><span class="p">,</span> <span class="n">OutputIt</span> <span class="n">d_first</span><span class="p">);</span></code></pre></figure>
+
+<p>The behaviour of the copy is equivalent to:</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">InputIt</span><span class="p">,</span> <span class="k">class</span> <span class="nc">OutputIt</span><span class="p">&gt;</span>
+<span class="n">OutputIt</span> <span class="nf">copy</span><span class="p">(</span><span class="n">InputIt</span> <span class="n">first</span><span class="p">,</span> <span class="n">InputIt</span> <span class="n">last</span><span class="p">,</span> <span class="n">OutputIt</span> <span class="n">d_first</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span> <span class="n">first</span> <span class="o">!=</span> <span class="n">last</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">*</span><span class="n">d_first</span> <span class="o">=</span> <span class="o">*</span><span class="n">first</span><span class="p">;</span>
+        <span class="n">first</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">d_first</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">d_first</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>The behaviour is undefined if <code class="language-plaintext highlighter-rouge">d_first</code> is in the range <code class="language-plaintext highlighter-rouge">[first, last)</code>.</p>
+
+
+  </article>
+
+</div>
 
     </div>
 

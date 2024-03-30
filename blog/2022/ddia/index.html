@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Design Data Intensive Applications</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/ddia/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,73 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Design Data Intensive Applications</h1>
+    <p class="post-meta">January 3, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/System%20Design">
+          <i class="fas fa-tag fa-sm"></i> System Design</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <h3 id="loads">Loads</h3>
+
+<p>Parameters for the load can be:</p>
+<ul>
+  <li>Requests per second to a web server</li>
+  <li>ratio of reads/write per seconds to database</li>
+  <li>Number of simultaneous users in a chat room</li>
+  <li>hit rate on cache</li>
+</ul>
+
+<hr>
+
+<h3 id="database">Database</h3>
+
+<p>The read/write performance of a database heavily depends on the data structure that it uses to store data. We consider that every record is of key/value type and evaluate different types of data structures used by databases.</p>
+
+<h4 id="log-based-append-only">Log-based (Append Only)</h4>
+<p>Some databases use the append-only mechanism. They use a log file that is appended on write operation. They have a very good performance for write operation but are very slow for the read. For a read operation, the entire log has to be traversed to find the value.</p>
+
+<p>There is an issue of disk space also with log-based database as every write to the same key will also increase the size. One possible solution for this problem is <code class="language-plaintext highlighter-rouge">Compaction</code>. There can be a compaction service running that can go through the logs and entries for the same key. The service can then retain the latest change and discard all the previous changes resulting in efficient usage of disk space.</p>
+
+<h4 id="compaction">Compaction</h4>
+
+<p>The compaction can be performed on a separate thread without disturbing the read/write operation of the database. Each log file can be viewed as a data segment. We never update any existing data segment but create new ones.</p>
+
+<ol>
+  <li>Existing data segments can be loaded in a memory hash map.</li>
+  <li>Same keys from different segments can be looked up efficiently (using hashmap) and merged.</li>
+  <li>We create new segments while combining the keys. Meanwhile, the existing read/write operation can be performed using the existing data segment.</li>
+  <li>Once the merging is completed, we can switch to the new data segment and perform read/write operations from the new segment.</li>
+</ol>
+
+<h4 id="index">Index</h4>
+<p>Relational databases maintain indexes on the key. They have high-speed reads, but writes are very slow as every write will update the index.</p>
+
+<ul>
+  <li>Hash Index: Some databases maintain a hash map in memory to store the data. The primary condition of this type of database is to have a limited number of keys that can fit into memory.</li>
+</ul>
+
+<hr>
+<h1 id="replication">Replication</h1>
+
+<p>Replication is keeping the same data at different nodes that are connected via a network. Databases generally store data on multiple replicas. When a <em>write</em> operation is performed, the data should be replicated across all replicas.
+The most common solution is <em>leader-based replication</em>.</p>
+
+
+  </article>
+
+</div>
 
     </div>
 

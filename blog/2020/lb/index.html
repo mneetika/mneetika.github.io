@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Load Balancers</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2020/lb/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,79 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Load Balancers</h1>
+    <p class="post-meta">May 28, 2020</p>
+    <p class="post-tags">
+      <a href="/blog/2020"> <i class="fas fa-calendar fa-sm"></i> 2020 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Load balancers work at different networking layers. The load balancer generally are the end point of the network packet. Once the packet reaches the load balancer, they perform <code class="language-plaintext highlighter-rouge">SSL termination</code> i.e. they decrypt the packet. The decryption is generally performed at the load balancer level and not at server, because decryption is an processor expensive operation. The content server’s resources are generally avoided for performing this intensive task.</p>
+
+<h4 id="l4-load-balancers">L4 Load balancers</h4>
+
+<ul>
+  <li>L4 load balancer work at the <code class="language-plaintext highlighter-rouge">transport layer</code> of the OSI model.</li>
+  <li>The load balancer’s IP is provided to the client through the DNS. It means that when the client does a look up for <code class="language-plaintext highlighter-rouge">http://www.something.com</code>, the IP address returned by the DNS is the IP of the load balancer of the webiste.</li>
+  <li>
+    <p>Once the packet from the client is recieved, the load balancer performes a <code class="language-plaintext highlighter-rouge">Network Address Translation</code> (NAT). The source IP of the packet is changed to the load balancer’s IP and destination address is changed from the load balancer’s IP to the content server it has chosen on the internal network.</p>
+
+    <p>IP Packet:</p>
+
+    <p>[src:”client address” dest: “load balancer”] \(\rightarrow\) [src: “load balancer”, dest: “webserver”]</p>
+  </li>
+  <li>Similary before forwarding the packets from server to client, it changes the src address from content server to its own.</li>
+  <li>L4 load balancer make routing decision based on the packet headers. They do not inspect the packet content.</li>
+</ul>
+
+<h4 id="l7-load-balancers">L7 Load balancers</h4>
+
+<ul>
+  <li>L7 load balancers work at the <code class="language-plaintext highlighter-rouge">application layer</code> of the OSI model. They predominantly work with the HTTP protocol.</li>
+  <li>They terminate the network traffic and read the content of the HTTP packet to make routing decisions based on the packet content like <code class="language-plaintext highlighter-rouge">cookies</code>, <code class="language-plaintext highlighter-rouge">url</code> etc.</li>
+</ul>
+
+<h3 id="facebook-load-blancers">Facebook Load blancers</h3>
+
+<ol>
+  <li>Initially we can think of a client sending <code class="language-plaintext highlighter-rouge">https://facebook.com</code> to DNS sever. DNS server provides the IP of the HHVM server(php Server). The client directly connects to the HHVM server. The Request per Second (RPS) is quite low.</li>
+  <li>As the clients increase, we put an L7LBs between DNS and HHVM server to increase the RPS. The TCP SSL connection terminates at L7LBs. The L7LBs consistently hash the client request to a HHVM server.</li>
+  <li>To further increase the RPS, L4LBs are added infront of L7LBs. The L4LBs consistently hash the client’s request to L7LBs. The TCP connection is maintained by the L4LBs.</li>
+  <li>
+    <p>To further increase the RPS, a router is added in front of L4LBs. The router connects to consistently hashed L4LBs using ECMP. The system now look like</p>
+
+    <p>Cluster: [Router \(\rightarrow\) L4LBs \(\rightarrow\) L7LBs \(\rightarrow\) HHVM]</p>
+  </li>
+  <li>As router is a single point of failure, the clusters are replicated in different data centers for redundency and avoid single point of failure.</li>
+</ol>
+
+<p>Resources</p>
+
+<ol>
+  <li><a href="https://www.nginx.com/resources/glossary/layer-4-load-balancing/" target="_blank" rel="noopener noreferrer">https://www.nginx.com/resources/glossary/layer-4-load-balancing/</a></li>
+  <li><a href="https://www.nginx.com/resources/glossary/layer-7-load-balancing/" target="_blank" rel="noopener noreferrer">https://www.nginx.com/resources/glossary/layer-7-load-balancing/</a></li>
+  <li><a href="https://www.nginx.com/resources/glossary/reverse-proxy-server/" target="_blank" rel="noopener noreferrer">https://www.nginx.com/resources/glossary/reverse-proxy-server/</a></li>
+  <li>
+<a href="https://www.youtube.com/watch?v=dKsOvc73gQk" target="_blank" rel="noopener noreferrer">Facebook Load Balancers</a>, <a href="https://www.bizety.com/2017/01/17/facebook-billion-user-load-balancing/" target="_blank" rel="noopener noreferrer">Summary</a>
+</li>
+  <li>Github Load Balancers: <a href="https://github.blog/2016-09-22-introducing-glb/" target="_blank" rel="noopener noreferrer">Link 1</a>, <a href="https://github.blog/2018-08-08-glb-director-open-source-load-balancer/" target="_blank" rel="noopener noreferrer">Link 2</a>
+</li>
+</ol>
+
+  </article>
+
+</div>
 
     </div>
 

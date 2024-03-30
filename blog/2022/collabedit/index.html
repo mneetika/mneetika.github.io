@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Design Collabrative Editing</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/collabedit/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,77 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Design Collabrative Editing</h1>
+    <p class="post-meta">January 18, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/System%20Design">
+          <i class="fas fa-tag fa-sm"></i> System Design</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <h2 id="operation-tranformation">Operation Tranformation</h2>
+
+<p>Operational transformation (OT) is a technology for supporting a range of collaboration functionalities in advanced collaborative software systems. OT was originally invented for <code class="language-plaintext highlighter-rouge">consistency maintenance</code> and <code class="language-plaintext highlighter-rouge">concurrency control</code> in collaborative editing of plain text documents</p>
+
+<h3 id="system-architecture">System Architecture</h3>
+
+<ul>
+  <li>each client has their own copy of the document</li>
+  <li>clients operate on their local copies in a lock-free, non-blocking manner</li>
+  <li>the changes are then propagated to the rest of the clients</li>
+  <li>When a client receives the changes propagated from another client, it typically transforms the changes before executing them;
+    <ul>
+      <li>the transformation ensures that application-dependent consistency criteria (invariants) are maintained by all sites</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="basics">Basics</h3>
+
+<p>Given a text document with a string “abc” replicated at two collaborating sites; and two concurrent operations:</p>
+<ol>
+  <li>O1 = Insert[0, “x”] (to insert character “x” at position “0”)</li>
+  <li>O2 = Delete[2, “c”] (to delete the character “c” at position “2”)</li>
+</ol>
+
+<p>Suppose the two operations are executed in the order of O1 and O2 (at site 1)</p>
+
+<ul>
+  <li>After executing O1, the document becomes “xabc”</li>
+  <li>To execute O2 after O1, O2 must be transformed against O1 to become: <code class="language-plaintext highlighter-rouge">O2' = Delete[3, "c"]</code>, whose positional parameter is incremented by one due to the insertion of one character “x” by O1</li>
+  <li>Executing O2’ on “xabc” deletes the correct character “c” and the document becomes “xab”. However, if O2 is executed without transformation, it incorrectly deletes character “b” rather than “c”</li>
+</ul>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/collabdoc/OT.png"></center>
+</div>
+<p><br></p>
+
+<hr>
+
+<h2 id="architecture">Architecture</h2>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/collabdoc/Architecture.png"></center>
+</div>
+<p><br></p>
+
+
+  </article>
+
+</div>
 
     </div>
 

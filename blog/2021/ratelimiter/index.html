@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <!-- Head -->
+  <head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5BVSQVXNK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Y5BVSQVXNK');
+</script>        
+    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Neetika | Rate Limitter</title>
+    <meta name="author" content="Neetika  Mittal" />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
+    <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" integrity="sha512-MoRNloxbStBcD8z3M/2BmnT+rg4IsMxPkXaGh2zD6LGNNFE80W3onsAhRcMAMrSoyWL9xD7Ert0men7vR8LUZg==" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" integrity="sha512-RO38pBRxYH3SoOprtPTD86JFOclM51/XTIdEPh5j8sj4tp8jmQIx26twG52UaLi//hQldfrh7e51WzP9wuP32Q==" crossorigin="anonymous" />
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"  integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.0/css/academicons.min.css" integrity="sha512-W4yqoT1+8NLkinBLBZko+dFB2ZbHsYLDdr50VElllRcNt2Q4/GSs6u71UHKxB7S6JEMCp5Ve4xjh3eGQl/HRvg==" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://gitcdn.link/repo/jwarby/jekyll-pygments-themes/master/github.css" />
+
+    <!-- Styles -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2021/ratelimiter/">
+
+    <!-- Dark Mode -->
+    <script src="/assets/js/theme.js"></script>
+    <script src="/assets/js/dark_mode.js"></script>
+  </head>
+
+  <!-- Body -->
+  <body class="fixed-top-nav">
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="https://mneetika.github.io/">Neetika</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <!-- <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog</a>
+              </li> -->
+              <!-- vitae -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/assets/pdf/NeetikaMittal.pdf">vitae</a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/resources/">resources</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/tech/">tech</a>
+              </li>
+
+              <!-- Toogle theme mode -->
+              <div class="toggle-container">
+                <a id="light-toggle">
+                  <i class="fas fa-moon"></i>
+                  <i class="fas fa-sun"></i>
+                </a>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Content -->
+    <div class="container mt-5">
+      <!-- _layouts/post.html -->
+
+<div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Rate Limitter</h1>
+    <p class="post-meta">March 1, 2021</p>
+    <p class="post-tags">
+      <a href="/blog/2021"> <i class="fas fa-calendar fa-sm"></i> 2021 </a>
+        ·  
+        <a href="/blog/category/System%20Design">
+          <i class="fas fa-tag fa-sm"></i> System Design</a>  
+          
+
+    </p>
+  </header>
+
+  <article class="post-content">
+    <p>Here we aim to restrict the API calls to a server within a specified limit.</p>
+
+<hr>
+<h3 id="requirements">Requirements</h3>
+<h4 id="functional">Functional</h4>
+
+<ol>
+  <li>Limit the number of requests to an API server within a time window. Ex: 100 requests/sec.</li>
+  <li>The rate limiter should be applied to all the instances of the API server in a distributed server. This means that an error should be thrown when the request threshold is crossed either on a single server or across a combination of servers.</li>
+</ol>
+
+<h4 id="non-functional">Non-functional</h4>
+<ol>
+  <li>Highly available</li>
+  <li>Scalable</li>
+  <li>Low Latency</li>
+</ol>
+
+<hr>
+
+<h4 id="throttling-criteria">Throttling Criteria</h4>
+<p>The important point to note here is that the throttling can be done at two levels:</p>
+<ol>
+  <li>
+<em>User</em>: 
+ After authentication, the user can be assigned tokens. Based on the token, throttling can be performed. The problem with this approach is that throttling can only be performed after authentication. Any malicious actor can throttle the authentication system itself.</li>
+  <li>
+<em>IP/ Geography</em>:
+ Based on the source of the request throttling can be performed. The problem with this approach is that multiple users can be using the same gateway as in a big data center. This will cause an issue as for the rate limiter it will seem as if the requests are coming from a single source.</li>
+</ol>
+
+<p>We can combine both approaches for the best performance.</p>
+
+<hr>
+
+<h3 id="approach">Approach</h3>
+
+<p>Let’s assume we are designing a system to limit the requests to 5 <strong>requests per second (RPS)</strong></p>
+
+<h4 id="1-fixed-window-counter">1. Fixed Window Counter</h4>
+
+<p>We maintain a fixed window and count the number of requests in that window. If the requests exceed the limit in that particular window, we drop that request. The count is reset after the window expires.</p>
+
+<div>
+    <img src="/assets/img/FixedWindow.png">
+</div>
+
+<p>The problem with this approach is that we are considering requests per window as independent from each other. There could be a case where the request is stacked near the end of the current window and the start of the next window. The algorithm will allow the request to be forwarded to the API server, but in reality, the server would be serving requests more than the limit.</p>
+
+<p>To overcome the problem, we can have a rolling window.</p>
+
+<h4 id="2-sliding-window-counter">2. Sliding Window Counter</h4>
+
+<p>In the sliding window, the window is considered from the time of the request. We count the number of requests that are pending from the current request time.</p>
+
+<hr>
+
+<h3 id="algorithm">Algorithm</h3>
+
+<p>We maintain a hashtable or a Redis cache to store the user visits, where the <code class="language-plaintext highlighter-rouge">key: userId, value: List&lt;timestamp&gt;</code>.</p>
+
+<ol>
+  <li>Remove all the entries  <code class="language-plaintext highlighter-rouge">current timestamp - ListTimeStamp &gt; 1</code> as they will not contribute to the requests for that window.</li>
+  <li>Check the size of the remaining list. If the <code class="language-plaintext highlighter-rouge">ListSize &gt;= limit</code> drop the request else process the request.</li>
+</ol>
+
+<p>Lets assume that X is sending request at instances: <code class="language-plaintext highlighter-rouge">[ 03:00:00 AM [400], 03:01:05 AM [465], 03:01:20 AM [480], 03:01:45 AM[505] , 03:01:50 AM[520], 03:02:10 AM [530] ]</code>.
+Let the limit be set as 3 requests per second.</p>
+
+<ol>
+  <li>
+<strong>Request: [X] at 03:00:00</strong>
+    <ul>
+      <li>This is the first request. Insert it into the cache/table</li>
+      <li><strong>Cache: [x: {400}]</strong></li>
+    </ul>
+  </li>
+  <li>
+<strong>Request: [X] at 03:01:05</strong>
+    <ul>
+      <li>Remove the existing entry in the timestamp list as the <code class="language-plaintext highlighter-rouge">currentTimestamp - ListTimeStamp &gt; 1</code>. The existing entry was of <code class="language-plaintext highlighter-rouge">03:00:00</code> and the current request is at <code class="language-plaintext highlighter-rouge">03:01:05</code>. The 1 second window of first request has expired so its safe to remove the entry.</li>
+      <li>
+        <font color="green"> List size for X is 0. Process the request.</font>
+      </li>
+      <li><strong>Cache: [x: {465}]</strong></li>
+    </ul>
+  </li>
+  <li>
+<strong>Request: [X] at 03:01:20</strong>
+    <ul>
+      <li>
+        <font color="green"> List size for X is 1. Process the request.</font>
+      </li>
+      <li><strong>Cache: [x: {465, 480}]</strong></li>
+    </ul>
+  </li>
+  <li>
+<strong>Request: [X] at 03:01:45</strong>
+    <ul>
+      <li>
+        <font color="green"> List size for X is 2. Process the request.</font>
+      </li>
+      <li><strong>Cache: [x: {465, 480, 505}]</strong></li>
+    </ul>
+  </li>
+  <li>
+<strong>Request: [X] at 03:01:50</strong>
+    <ul>
+      <li>List size for X is 3. <code class="language-plaintext highlighter-rouge">Size &gt; Limit - 1</code>, <font color="red"> Drop the request. </font>
+</li>
+      <li><strong>Cache: [x: {465, 480, 505}]</strong></li>
+    </ul>
+  </li>
+  <li>
+<strong>Request: [X] at 03:02:10</strong>
+    <ul>
+      <li>Remove the existing entry in the timestamp list as the <code class="language-plaintext highlighter-rouge">currentTimestamp - ListTimeStamp &gt; 1</code>. Remove the entry for <code class="language-plaintext highlighter-rouge">03:01:05 AM</code>
+</li>
+      <li>
+        <font color="green"> List size for X is 2. Process the request.</font>
+      </li>
+      <li><strong>Cache: [x: {480, 505, 530}]</strong></li>
+    </ul>
+  </li>
+</ol>
+
+<hr>
+
+<h3 id="sample-c-implementation">Sample C++ implementation</h3>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">userId</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">dequeue</span><span class="o">&lt;</span><span class="n">TimeStamp</span><span class="o">&gt;&gt;</span> <span class="n">request_queue</span><span class="p">;</span>
+
+<span class="kt">bool</span> <span class="nf">request</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">userId</span><span class="p">,</span> <span class="n">TimeStamp</span> <span class="n">request_time</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">dequeue</span><span class="o">&lt;</span><span class="n">TimeStamp</span><span class="o">&gt;</span> <span class="n">time_queue</span><span class="p">;</span>
+    
+    <span class="c1">// first request</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">request_queue</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">userId</span><span class="p">)</span> <span class="o">==</span> <span class="n">request_queue</span><span class="p">.</span><span class="n">end</span><span class="p">())</span> <span class="p">{</span>
+        <span class="n">request_queue</span><span class="p">[</span><span class="n">userId</span><span class="p">]</span> <span class="o">==</span> <span class="n">time_queue</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">request_time</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">time_queue</span> <span class="o">=</span> <span class="n">request_queue</span><span class="p">[</span><span class="n">userId</span><span class="p">];</span>
+    <span class="k">while</span><span class="p">(</span><span class="o">!</span><span class="n">time_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">request_time</span> <span class="o">-</span> <span class="n">time_queue</span><span class="p">.</span><span class="n">top</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">time_queue</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+    <span class="p">}</span> 
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">request_queue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">LIMIT</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">time_queue</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">request_time</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<hr>
+
+<h3 id="distributed-system">Distributed System</h3>
+
+<p>In a distributed environment this technique will suffer from a few issues:</p>
+<ol>
+  <li>If the request is fired by the user to two different servers at the same time, then there might be a chance of breaching the threshold.
+ Ex: If the threshold is 3 and the user has already attempted 2 requests. Now suppose the user fires 2 requests to different servers. The Redis entry will still reflect as 2 attempts for both the servers and both the requests will go through. This will cross the threshold of the server as now the server has serviced 4 requests.</li>
+</ol>
+
+<div>
+    <img src="/assets/img/RateLimitterDS.png">
+</div>
+
+<p>We can shard based on the ‘UserID’ to distribute the user’s data. For fault tolerance and replication we should use Consistent Hashing. If we want to have different throttling limits for different APIs, we can choose to shard per user per API. Take the example of URL Shortener; we can have different rate limiters for createURL() and deleteURL() APIs for each user or IP.</p>
+
+<p>If our APIs are partitioned, a practical consideration could be to have a separate (somewhat smaller) rate limiter for each API shard as well. Let’s take the example of our URL Shortener where we want to limit each user not to create more than 100 short URLs per hour. Assuming we are using Hash-Based Partitioning for our createURL() API, we can rate-limit each partition to allow a user to create not more than three short URLs per minute in addition to 100 short URLs per hour.</p>
+
+<p>Our system can get huge benefits from caching recent active users. Application servers can quickly check if the cache has the desired record before hitting backend servers. Our rate limiter can significantly benefit from the Write-back cache by updating all counters and timestamps in cache only. The write to the permanent storage can be done at fixed intervals. This way we can ensure minimum latency is added to the user’s requests by the rate limiter. The reads can always hit the cache first; which will be extremely useful once the user has hit their maximum limit and the rate limiter will only be reading data without any updates.</p>
+
+<p>Least Recently Used (LRU) can be a reasonable cache eviction policy for our system.</p>
+
+
+  </article>
+
+</div>
+
+    </div>
+
+    <!-- Footer -->    
+    <footer class="fixed-bottom">
+      <div class="container mt-0">
+        © Copyright 2024 Neetika  Mittal. Powered by <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" target="_blank" rel="noopener noreferrer">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+
+      </div>
+    </footer>
+  </body>
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
+  <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.4.4/umd/popper.min.js" integrity="sha512-eUQ9hGdLjBjY3F41CScH3UX+4JDSI9zXeroz7hJ+RteoCaY+GP/LDoM8AO+Pt+DRFw3nXqsjh9Zsts8hnYv8/A==" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha512-M5KW3ztuIICmVIhjSqXe01oV2bpe248gOxqmlcYrEzAvws7Pw3z6BK0iGbrwvdrUQUhi3eXgtxp5I8PDo9YfjQ==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js" integrity="sha512-Mug9KHKmroQFMLm93zGrjhibM2z2Obg9l6qFG2qKjXEXkMp/VDkI4uju9m4QKPjWSwQ6O2qzZEnJDEeCw0Blcw==" crossorigin="anonymous"></script>
+
+  <!-- Mansory & imagesLoaded -->
+  <script defer src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <script defer src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script defer src="/assets/js/mansory.js" type="text/javascript"></script>
+  
+  <!-- Medium Zoom JS -->
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/assets/js/zoom.js"></script><!-- Load Common JS -->
+  <script src="/assets/js/common.js"></script>
+
+  <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  
+</html>
+

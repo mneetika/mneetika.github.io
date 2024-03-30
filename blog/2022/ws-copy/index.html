@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | WebSockets</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/ws-copy/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,91 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">WebSockets</h1>
+    <p class="post-meta">January 1, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Client and Server communicate through the HTTP, which is on the Application Layer.</p>
+
+<ul>
+  <li>HTTP Request/Response:
+    <ul>
+      <li>Client sends the requests to servers that are independent of each other. It is like a coin toss. The toss is independent of the last outcome.</li>
+      <li>This method is insufficient to load dynamic data on a web page. Each update will require a page refresh.</li>
+    </ul>
+  </li>
+  <li>Ajax Request:
+    <ul>
+      <li>Asynchronous send data to the server without refreshing</li>
+      <li>Server keeps open the connection with the client. The client is the one that always initiates the request. The server can not proactively send resp</li>
+      <li>This method is insufficient when we are designing applications like Facebook feed. Users will have to manually send requests to ask for an updated feed as the server can not send the response proactively.</li>
+    </ul>
+  </li>
+  <li>WebSockets:
+    <ul>
+      <li>full-duplex bi-directional communication</li>
+      <li>It is an upgrade over HTTP
+        <ul>
+          <li>Uses the same TCP connection over <code class="language-plaintext highlighter-rouge">ws://</code> or <code class="language-plaintext highlighter-rouge">wss:///</code>
+</li>
+        </ul>
+      </li>
+      <li>Sends headers only once</li>
+    </ul>
+  </li>
+  <li>Polling and Long Polling
+    <ul>
+      <li>Polling: Sends Ajax request every X amount of seconds for new data</li>
+      <li>Long Polling: Client sends a request to the server and keeps connection open until new data</li>
+    </ul>
+  </li>
+</ul>
+
+<hr>
+
+<h4 id="websocket">WebSocket</h4>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebSocket</span><span class="p">(</span><span class="dl">'</span><span class="s1">ws://localhost:8000</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="nx">socket</span><span class="p">.</span><span class="nx">onopen</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">//on connection, do something</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Socket open</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">socket</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">//message from server</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+<span class="p">});</span>
+
+</code></pre></div></div>
+
+<hr>
+
+<h4 id="references">References</h4>
+
+<ol>
+  <li><a href="https://www.youtube.com/watch?v=8ARodQ4Wlf4&amp;ab_channel=freeCodeCamp.org" target="_blank" rel="noopener noreferrer">FreeCodeCamp</a></li>
+  <li>Gojek <a href="https://blog.gojek.io/introducing-courier-the-information-superhighway-between-mobile-server/" target="_blank" rel="noopener noreferrer">Link 1</a> <a href="https://www.gojek.io/blog/the-quest-for-a-message-broker-for-our-courier?utm_source=medium&amp;utm_medium=blog&amp;utm_campaign=blog_courierpart2" target="_blank" rel="noopener noreferrer">Link 2</a>
+</li>
+</ol>
+
+  </article>
+
+</div>
 
     </div>
 

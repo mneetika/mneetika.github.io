@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Kafka</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Distributed Messaging Queue" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +40,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/messagingq/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +74,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +105,87 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Kafka</h1>
+    <p class="post-meta">January 14, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Messaging queue manages the logs or messages published at a very large rate.</p>
+
+<hr>
+
+<h2 id="publisher-subscriber-model">Publisher-Subscriber Model</h2>
+
+<p><strong>Publishers</strong>: Publish message to a particular topic. Instead of sending it directly to the queue, they publish it to topic.</p>
+
+<p><strong>Subscribers</strong>: Consumers can consume message by subscribing to a topic. Many consumers can subscribe to the same topic. The message is sent to all the subscribers.</p>
+
+<div>
+    <center><img src="/assets/img/messagingq/messageQ.png"></center>
+</div>
+
+<hr>
+
+<h2 id="kafka">Kafka</h2>
+<p>Kafka works on <code class="language-plaintext highlighter-rouge">publisher-subscriber</code> model. It takes in the messages sent by Producers and stores them reliably on a center cluster, and allows the messages to be received by the consumers.</p>
+
+<div>
+    <center><img src="/assets/img/messagingq/kafkaCluster.png"></center>
+</div>
+
+<p><br></p>
+
+<ul>
+  <li>Kafka stores all the messages on disk in an append-only log.</li>
+  <li>
+<strong>Brokers</strong>: Kafka servers are called brokers. They are responsible for receiving messages, storing on disk and sending the messages.</li>
+  <li>
+<strong>Record</strong>: A record is a message that has: <code class="language-plaintext highlighter-rouge">key, value, timestamp, optional metadata headers</code>.</li>
+  <li>
+<strong>Topics</strong>: Messages are divided into categories called as topics. Topics are unique for a cluster.
+    <ul>
+      <li>Every message that kafka receives is associated with a topic</li>
+      <li>consumers subscribe to a topic and are notified whenever a new message is received by kafka</li>
+      <li>Multiple consumers can subscribe to the same topic</li>
+    </ul>
+  </li>
+  <li>The messages are not deleted as soon as they are consumed. Instead they are retained for some configurable amount of time.</li>
+</ul>
+
+<div>
+    <center><img src="/assets/img/messagingq/pubSub.png"></center>
+</div>
+
+<ul>
+  <li>
+<strong>Cluster</strong>: Set of one or more servers, responsible for running a kafka broker</li>
+  <li>
+<strong>Zookeeper</strong>: Configuration service that maintains metadata about kafka servers</li>
+</ul>
+
+<hr>
+
+<p>Resources</p>
+<ol>
+  <li><a href="https://www.youtube.com/watch?v=ElilYxUOjOQ&amp;ab_channel=Devoxx" target="_blank" rel="noopener noreferrer">Kafka</a></li>
+</ol>
+
+  </article>
+
+</div>
 
     </div>
 

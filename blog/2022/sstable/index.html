@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | SSTable</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Persistance Storage" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +40,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/sstable/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +74,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +105,109 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">SSTable</h1>
+    <p class="post-meta">January 17, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p><code class="language-plaintext highlighter-rouge">Sorted String Tables</code> are immutable files that contain arbitrary, <code class="language-plaintext highlighter-rouge">sorted key-value pairs</code>, persisted on the disk. When <code class="language-plaintext highlighter-rouge">Memtables</code> are flushed from memory to disk, they are stored as SSTables.</p>
+
+<p>SSTables support fast sequential read/writes. As SSTables are sorted sequences of key-value pairs, an index file is maintained for fast retrieval. To retrieve data from SSTable, a binary search can be performed on the index to locate the offset of the value. The index partition is also stored in the disk.</p>
+
+<div>
+    <center><img src="/assets/img/sstable/sstable.png"></center>
+</div>
+
+<p><br></p>
+
+<p>Example:</p>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/sstable/table.png"></center>
+</div>
+<p><br></p>
+
+<p>For fast read, a <code class="language-plaintext highlighter-rouge">partition index summary</code> file is maintained which maps the key range to the offsets.</p>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/sstable/partition.png"></center>
+</div>
+<p><br></p>
+
+<p>Recently accessed SSTables offsets are stored in cache:<code class="language-plaintext highlighter-rouge">key cache</code>. 
+It maps <code class="language-plaintext highlighter-rouge">Key</code> \(\rightarrow\) <code class="language-plaintext highlighter-rouge">Byte offset</code></p>
+
+<hr>
+
+<h3 id="reads">Reads</h3>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/sstable/read.png"></center>
+</div>
+<p><br></p>
+
+<ul>
+  <li>When a read request arrives, it is first checked against the <code class="language-plaintext highlighter-rouge">Memtable</code>, if found the value is returned</li>
+  <li>Lookup in <code class="language-plaintext highlighter-rouge">key cache</code>, if found in key cache the disk is read for the specified offset, and value is returned.</li>
+  <li>Perform binary search lookup in <code class="language-plaintext highlighter-rouge">primary index summary</code> to find the offset. The offset will give the location of the <code class="language-plaintext highlighter-rouge">index file</code>. From the <code class="language-plaintext highlighter-rouge">index file</code>, the disk offset can be found. The disk is read for that offset and the value is returned.</li>
+</ul>
+
+<hr>
+
+<h2 id="compactions">Compactions</h2>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/sstable/compaction.png"></center>
+</div>
+<p><br></p>
+
+<p>As SSTables are immutable, they can grow in size to a very huge amount. <code class="language-plaintext highlighter-rouge">Compaction</code> helps compress the SSTables.</p>
+
+<p>Compaction is the operation of merging multiple related SSTables into a single new one. During compaction, the data in SSTables are merged:</p>
+<ul>
+  <li>The keys are merged</li>
+  <li>columns are combined</li>
+  <li>obsolete values are discarded</li>
+  <li>a new index is created</li>
+</ul>
+
+<p>After compaction is performed the data is written into a new SSTable and the older SSTables are deleted from the disk.</p>
+
+<p><br></p>
+<div>
+    <center><img src="/assets/img/sstable/compaction_flow.png"></center>
+</div>
+<p><br></p>
+
+<hr>
+
+<h2 id="resources">Resources</h2>
+
+<ol>
+  <li><a href="https://www.igvita.com/2012/02/06/sstable-and-log-structured-storage-leveldb/" target="_blank" rel="noopener noreferrer">Google SSTables</a></li>
+</ol>
+
+
+  </article>
+
+</div>
 
     </div>
 

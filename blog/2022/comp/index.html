@@ -11,7 +11,7 @@
   gtag('js', new Date());
 
   gtag('config', 'G-Y5BVSQVXNK');
-</script><meta http-equiv="refresh" content="3; url=https://mneetika.github.io/" />        
+</script>        
     <!-- Metadata, OpenGraph and Schema.org -->
     
 
@@ -19,9 +19,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Neetika | Page not found</title>
+    <title>Neetika | Comparison between databases</title>
     <meta name="author" content="Neetika  Mittal" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+" />
     <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website" />
 
 
@@ -40,7 +41,7 @@
     <!-- Styles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://mneetika.github.io/404.html">
+    <link rel="canonical" href="https://mneetika.github.io/blog/2022/comp/">
 
     <!-- Dark Mode -->
     <script src="/assets/js/theme.js"></script>
@@ -74,7 +75,7 @@
               </li>
               
               <!-- Blog -->
-              <!-- <li class="nav-item ">
+              <!-- <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li> -->
               <!-- vitae -->
@@ -105,20 +106,81 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://mneetika.github.io/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Comparison between databases</h1>
+    <p class="post-meta">January 5, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+        ·  
+        <a href="/blog/category/Distributed%20Systems%20Components">
+          <i class="fas fa-tag fa-sm"></i> Distributed Systems Components</a>  
+          
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <h3 id="bigtable-vs-dynamodb">BigTable vs DynamoDB</h3>
+
+<table class="post-table">
+  <tr>
+    <th></th>
+    <th>DynamoDB</th>
+    <th>BigTable</th>
+  </tr>
+  <tr>
+    <td>Architecture</td>
+    <td>Decentralized<br> Every node has same set of responsibilites</td>
+    <td>Centralized<br> Master handles metadata, tablet server handle reads/writes</td>
+  </tr>
+  <tr>
+    <td>DataModel</td>
+    <td>Key-Value</td>
+    <td>Multidimensional Sorted-Map</td>
+  </tr>
+  <tr>
+    <td>Partitioning </td>
+    <td>Consistent Hashing<br>Each node is assigned to a random position on the ring</td>
+    <td>Tablets <br>Each table is broken into a contiguous range of rows called tablets</td>
+  </tr>
+<tr>
+    <td>Replication  </td>
+    <td>Sloppy Quorum<br> Each data item is replicated to 'N' number of nodes</td>
+    <td>GFS Chunk replication<br>Data is stored in GFS. Files in GFS are broken into chunks, and these chunks are replicated to different servers</td>
+  </tr>
+    <tr>
+    <td>CAP </td>
+    <td>AP</td>
+    <td>CP</td>
+  </tr>
+<tr>
+    <td>Operations </td>
+    <td>By Key</td>
+    <td>By Key-Range</td>
+  </tr>
+    <tr>
+    <td>Storage </td>
+    <td>Plug-in</td>
+    <td>SSTables in GFS</td>
+  </tr>
+     <tr>
+    <td>Memberships and failure detection </td>
+    <td>Gossip based protocol</td>
+    <td>Handshakes initiated by the master</td>
+  </tr>
+</table>
+
+<p>
+Cassandra is a distributed, decentralized, and highly available NoSQL database. Its architecture is based on Dynamo and BigTable. Cassandra can be described as a BigTable-like datastore running on a Dynamo-like infrastructure. Cassandra is also a wide-column store and utilizes the storage model of BigTable, i.e., SSTables and MemTables.
+</p>
+
+  </article>
+
+</div>
 
     </div>
 
