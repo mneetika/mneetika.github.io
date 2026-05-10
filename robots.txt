@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mneetika.github.io/sitemap.xml
