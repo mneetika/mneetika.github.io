@@ -1,0 +1,92 @@
+---
+layout: single
+comments: true
+title: "Arrays Basics & STL"
+date: 2025-11-02 07:00:00-0400
+categories: [LeetCode]
+---
+
+## Arrays Basics + STL
+
+---
+
+### 1. [Two Sum](https://leetcode.com/problems/two-sum/)
+
+**Mental Model:**  
+- Need to find **two numbers adding up to a target**.  
+- Use a **hash map** for O(n) lookup instead of nested loops.  
+- Store `num -> index` while traversing array.
+
+
+**C++ Solution:**
+
+```c++
+vector<int> twoSum(vector<int>& nums, int target) {
+    unordered_map<int, int> mp;
+    for (int i = 0; i < nums.size(); i++) {
+        int complement = target - nums[i];
+        if (mp.count(complement)) return {mp[complement], i};
+        mp[nums[i]] = i;
+    }
+    return {};
+}
+```
+
+**Revision Tip:**
+
+* Think hash map → “store what you need to find later”.
+* Avoid nested loops for pair-sum problems.
+
+----
+
+### 2. [Best Time to Buy and Sell Stock](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
+
+**Mental Model:**
+
+- Need max profit from buy once, sell once.
+- Track minimum price so far, calculate profit at each step.
+
+**C++ Solution:**
+
+```c++
+int maxProfit(vector<int>& prices) {
+    int minPrice = INT_MAX, maxProfit = 0;
+    for (int price : prices) {
+        minPrice = min(minPrice, price);
+        maxProfit = max(maxProfit, price - minPrice);
+    }
+    return maxProfit;
+}
+
+```
+
+**Revision Tip:**
+
+* Always track running minimum/maximum when looking for single-pass solutions.
+
+---
+
+
+### 3. [Contains Duplicate](https://leetcode.com/problems/contains-duplicate/)
+
+**Mental Model:**
+- Check if any number repeats in array.
+- Hash set works in O(n) time.
+
+
+```c++
+bool containsDuplicate(vector<int>& nums) {
+    unordered_set<int> seen;
+    for (int num : nums) {
+        if (seen.count(num)) return true;
+        seen.insert(num);
+    }
+    return false;
+}
+
+```
+
+**Revision Tip:**
+
+- Think hash set → uniqueness.
+- Useful for any duplicate detection problems.

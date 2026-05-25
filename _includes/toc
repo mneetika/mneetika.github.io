@@ -1,0 +1,59 @@
+<aside class="sidebar__{{ include.position | default: 'left' }}">
+  <nav class="toc">
+    <header><h4 class="nav__title"><i class="fa fa-{{ include.icon | default: 'file-text' }}"></i> {{ include.title | default: site.data.ui-text[site.locale].toc_label }}</h4></header>
+    <ul class="toc__menu js-toc-menu"></ul>
+  </nav>
+  <script>
+    (function () {
+      function buildToc() {
+        var tocMenu = document.querySelector('.js-toc-menu');
+        var tocAside = tocMenu && tocMenu.closest('aside');
+        var content = document.querySelector('.page__content');
+        if (!tocMenu || !content) return;
+
+        var headings = content.querySelectorAll('h2, h3, h4');
+        if (!headings.length) {
+          tocAside.style.display = 'none';
+          return;
+        }
+
+        tocMenu.innerHTML = '';
+
+        var idCounts = {};
+        function slugify(text) {
+          return text
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+        }
+
+        headings.forEach(function (heading) {
+          if (!heading.id) {
+            var base = slugify(heading.textContent || heading.innerText || 'section');
+            var count = idCounts[base] || 0;
+            idCounts[base] = count + 1;
+            heading.id = count ? base + '-' + count : base;
+          }
+
+          var li = document.createElement('li');
+          li.className = 'toc__item toc__item--' + heading.tagName.toLowerCase();
+
+          var a = document.createElement('a');
+          a.href = '#' + heading.id;
+          a.textContent = heading.textContent;
+
+          li.appendChild(a);
+          tocMenu.appendChild(li);
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', buildToc);
+      } else {
+        buildToc();
+      }
+    })();
+  </script>
+</aside>

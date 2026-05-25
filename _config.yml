@@ -1,0 +1,245 @@
+locale: "en-US"
+site_theme: "default"
+title: "Neetika Mittal"
+title_separator: "-"
+name: "Neetika Mittal"
+description: "Senior Software Engineer at Meta in London, focused on iOS, real-time media, Generative AI, payments, and consumer product engineering."
+url: "https://mneetika.github.io"
+baseurl: ""
+repository: "mneetika/mneetika.github.io"
+og_description: "Senior Software Engineer at Meta focused on iOS, real-time media, Generative AI, payments, and product engineering."
+og_image: "me.jpeg"
+
+author:
+  avatar: "me.jpeg"
+  name: "Neetika Mittal"
+  bio: "Senior Software Engineer at Meta"
+  location: "London, United Kingdom"
+  email: "neetikamittal2010@gmail.com"
+  github: "mneetika"
+  linkedin: "neetika-mittal-a01a7387"
+
+social:
+  name: "Neetika Mittal"
+  links:
+    - "https://github.com/mneetika"
+    - "https://www.linkedin.com/in/neetika-mittal-a01a7387/"
+
+breadcrumbs: false
+words_per_minute: 160
+future: true
+read_more: "disabled"
+talkmap_link: false
+
+comments:
+  provider: false
+  giscus:
+    repo: ""
+    repo_id: ""
+    category: "Announcements"
+    category_id: "DIC_kwDORQjdN84C3Muz"
+    mapping: "pathname"
+    strict: "0"
+    reactions_enabled: "1"
+    emit_metadata: "0"
+    input_position: "top"
+    theme: "preferred_color_scheme"
+    lang: "en"
+
+atom_feed:
+  hide: false
+
+analytics:
+  provider: false
+  google:
+    tracking_id: ""
+
+include:
+  - .htaccess
+  - _pages
+  - files
+
+exclude:
+  - "*.sublime-project"
+  - "*.sublime-workspace"
+  - .asset-cache
+  - .bundle
+  - .github
+  - .jekyll-assets-cache
+  - .sass-cache
+  - .nojekyll
+  - CHANGELOG
+  - Capfile
+  - config
+  - Dockerfile
+  - Gemfile
+  - Gruntfile.js
+  - gulpfile.js
+  - LICENSE
+  - node_modules
+  - package.json*
+  - Rakefile
+  - README
+  - tmp
+  - vendor
+
+keep_files:
+  - .git
+  - .svn
+
+encoding: "utf-8"
+markdown_ext: "markdown,mkdown,mkdn,mkd,md"
+
+markdown: kramdown
+highlighter: rouge
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+
+collections:
+  teaching:
+    output: true
+    permalink: /:collection/:path/
+  publications:
+    output: true
+    permalink: /:collection/:path/
+  portfolio:
+    output: true
+    permalink: /:collection/:path/
+  talks:
+    output: true
+    permalink: /:collection/:path/
+  projects:
+    output: true
+    permalink: /projects/:path/
+  experience:
+    output: true
+    permalink: /experience/:path/
+  education:
+    output: true
+    permalink: /education/:path/
+  news:
+    output: true
+    permalink: /news/:path/
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      toc: true
+      author_profile: false
+      read_time: true
+      comments: true
+      share: true
+      related: true
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: true
+  - scope:
+      path: ""
+      type: teaching
+    values:
+      layout: single
+      author_profile: true
+      share: true
+      comments: true
+  - scope:
+      path: ""
+      type: publications
+    values:
+      layout: single
+      author_profile: true
+      share: true
+      comments: true
+  - scope:
+      path: ""
+      type: portfolio
+    values:
+      layout: single
+      author_profile: true
+      share: true
+      comments: true
+  - scope:
+      path: ""
+      type: talks
+    values:
+      layout: talk
+      author_profile: true
+      share: true
+  - scope:
+      path: ""
+      type: projects
+    values:
+      layout: single
+      author_profile: true
+  - scope:
+      path: ""
+      type: experience
+    values:
+      layout: single
+      author_profile: true
+  - scope:
+      path: ""
+      type: education
+    values:
+      layout: single
+      author_profile: true
+  - scope:
+      path: ""
+      type: news
+    values:
+      layout: single
+      author_profile: false
+
+sass:
+  sass_dir: _sass
+  style: compressed
+
+permalink: /blog/:year/:title/
+timezone: Etc/UTC
+
+plugins:
+  - jekyll-feed
+  - jekyll-gist
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-redirect-from
+  - jemoji
+  - jekyll-include-cache
+
+whitelist:
+  - jekyll-feed
+  - jekyll-gist
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-redirect-from
+  - jemoji
+  - jekyll-include-cache
+
+category_archive:
+  type: liquid
+  path: /categories/
+
+tag_archive:
+  type: liquid
+  path: /tags/
+
+compress_html:
+  clippings: all
+  ignore:
+    envs: development

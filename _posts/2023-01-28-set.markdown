@@ -1,0 +1,39 @@
+---
+layout: single
+comments: true
+title: ['Set']
+date: 2023-01-28 00:00:00-0000
+categories: ['Language']
+---
+
+## C++
+
+`std::set` in `<set>`
+
+```c++
+template<
+    class Key,
+    class Compare = std::less<Key>,
+    class Allocator = std::allocator<Key>,
+> class set;
+```
+* Container that contains a sorted set of unique objects of type Key. Sorting is done using `Compare`.
+* Internally `red-black trees` are used. Search, removal, Insertion has logarithmic complexity.
+
+* **capacity**: `size()`, `empty()` 
+* **modify**: `clear()`, `insert()`
+* **lookup**: `find()`, `contains()`, `count()`,
+
+
+----
+
+## Java
+Set is an interface implemented by: AbstractSet, `ConcurrentSkipListSet, EnumSet, HashSet, LinkedHashSet, TreeSet`
+
+```java
+Set<E> set = new HashSet<E>();
+```
+
+* **capacity**: `size()`, `isEmpty()`
+* **modify**: `add(E e)`, `addAll(Collection<? extends E> e)`
+* **lookup**: `contains(E e)`

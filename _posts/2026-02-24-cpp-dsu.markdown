@@ -1,0 +1,106 @@
+---
+layout: single
+comments: true
+title: Disjoint Set Union
+date: 2026-02-24 10:00:00-0000
+categories: C++
+tags: [cpp, algorithms, graph, dsu]
+---
+
+## DSU Class
+DSU tracks components in a dynamic undirected graph.
+Core idea: each set has a representative (parent/root).
+How it works:
+- `find` returns representative with path compression.
+- `unionSets` merges components by size to keep trees shallow.
+- `connected` checks if two nodes share the same representative.
+
+Dry-run:
+- Start with nodes `{0,1,2,3}` separate.
+- `unionSets(0,1)`, `unionSets(2,3)`.
+- `connected(0,1)` -> `true`, `connected(1,2)` -> `false`.
+- `unionSets(1,2)` merges both components.
+- `connected(0,3)` -> `true`.
+
+Complexity:
+- `find` (amortized): `~O(1)` (inverse Ackermann).
+- `unionSets` (amortized): `~O(1)`.
+
+Edge-case checklist:
+- Index out of range for node IDs.
+- Forgetting both path compression and union by size/rank.
+- Assuming DSU supports directed reachability (it does not).
+
+{% highlight c++ %}
+#include <numeric>
+#include <vector>
+
+class Dsu {
+ public:
+  explicit Dsu(int n) : parent_(n), size_(n, 1) {
+    std::iota(parent_.begin(), parent_.end(), 0);
+  }
+
+  int find(int x) {
+    if (parent_[x] != x) {
+      parent_[x] = find(parent_[x]);
+    }
+    return parent_[x];
+  }
+
+  bool unionSets(int a, int b) {
+    int pa = find(a);
+    int pb = find(b);
+    if (pa == pb) {
+      return false;
+    }
+
+    if (size_[pa] < size_[pb]) {
+      std::swap(pa, pb);
+    }
+    parent_[pb] = pa;
+    size_[pa] += size_[pb];
+    return true;
+  }
+
+  bool connected(int a, int b) { return find(a) == find(b); }
+
+ private:
+  std::vector<int> parent_;
+  std::vector<int> size_;
+};
+{% endhighlight %}
+
+## Detect Cycle in Undirected Graph
+In an undirected graph, adding an edge between already connected nodes forms a cycle.
+Core idea: try to union each edge.
+How it works: if union fails (`u` and `v` already same set), cycle exists.
+
+Dry-run:
+- Edges: `(0,1), (1,2), (2,0)`.
+- First two unions succeed.
+- Third edge `(2,0)` fails union (already connected).
+- Cycle detected.
+
+Complexity:
+- Time `O(E * alpha(V))`.
+- Space `O(V)`.
+
+Edge-case checklist:
+- Self-loop edge `(u,u)` should instantly indicate a cycle.
+- Parallel duplicate edges may also trigger cycle condition.
+
+{% highlight c++ %}
+#include <utility>
+#include <vector>
+
+bool hasCycle(int n, const std::vector<std::pair<int, int>>& edges) {
+  Dsu dsu(n);
+  for (const auto& [u, v] : edges) {
+    if (!dsu.unionSets(u, v)) {
+      return true;
+    }
+  }
+  return false;
+}
+{% endhighlight %}

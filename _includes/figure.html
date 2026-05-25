@@ -1,0 +1,14 @@
+{%- assign img_src = include.path | default: include.url -%}
+{%- if img_src -%}
+<figure class="post-figure">
+  <img
+    src="{{ img_src | relative_url }}"
+    alt="{{ include.alt | default: include.title | default: '' }}"
+    {% if include.class %}class="{{ include.class }}"{% endif %}
+    {% if include.width %}style="width: {{ include.width }};"{% endif %}
+  >
+  {% if include.title or include.caption %}
+  <figcaption>{{ include.caption | default: include.title }}</figcaption>
+  {% endif %}
+</figure>
+{%- endif -%}

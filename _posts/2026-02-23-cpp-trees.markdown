@@ -1,0 +1,520 @@
+---
+layout: single
+comments: true
+title: Trees
+date: 2026-02-23 10:00:00-0000
+categories: C++
+tags: [cpp, algorithms, tree, bst]
+---
+
+## Node Definition
+What it does:
+- Defines the basic building block of a binary tree.
+
+Core idea:
+- Every node stores one value and at most two child pointers.
+- A full tree is formed by linking nodes recursively.
+
+How it works:
+- `val` stores data.
+- `left` points to left subtree.
+- `right` points to right subtree.
+
+When to use:
+- Any binary tree / BST / recursion question.
+
+Complexity:
+- Node access is `O(1)`.
+
+Edge-case checklist:
+- Forgetting to initialize child pointers to `nullptr`.
+- Mixing ownership rules when deleting nodes.
+
+{% highlight c++ %}
+#include <queue>
+#include <stack>
+#include <vector>
+
+struct TreeNode {
+  int val;
+  TreeNode* left;
+  TreeNode* right;
+
+  explicit TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+};
+{% endhighlight %}
+
+## DFS Traversals (Recursive)
+What it does:
+- Visits all tree nodes in depth-first order.
+
+Core idea:
+- Recursion gives an implicit stack for backtracking.
+- Changing the "visit node" position gives different orders.
+
+How it works:
+- Inorder: visit left subtree, then node, then right subtree.
+- Preorder: visit node first, then left and right.
+- Postorder: visit children first, then node.
+
+When to use:
+- Inorder for BST sorted output.
+- Preorder for tree serialization/copy.
+- Postorder for delete/free and bottom-up logic.
+
+Complexity:
+- Time `O(n)` for all traversals.
+- Extra space `O(h)` recursion stack (`h` = tree height).
+
+Edge-case checklist:
+- Missing base case `root == nullptr`.
+- Assuming recursion depth is safe for skewed trees.
+
+Dry-run:
+- Tree:
+```text
+    1
+   / \
+  2   3
+```
+- Inorder traversal output: `[2, 1, 3]`.
+- Preorder traversal output: `[1, 2, 3]`.
+- Postorder traversal output: `[2, 3, 1]`.
+
+### Inorder
+
+{% highlight c++ %}
+void inorderRecursive(TreeNode* root, std::vector<int>& out) {
+  if (root == nullptr) {
+    return;
+  }
+  inorderRecursive(root->left, out);
+  out.push_back(root->val);
+  inorderRecursive(root->right, out);
+}
+{% endhighlight %}
+
+### Preorder
+
+{% highlight c++ %}
+void preorderRecursive(TreeNode* root, std::vector<int>& out) {
+  if (root == nullptr) {
+    return;
+  }
+  out.push_back(root->val);
+  preorderRecursive(root->left, out);
+  preorderRecursive(root->right, out);
+}
+{% endhighlight %}
+
+### Postorder
+
+{% highlight c++ %}
+void postorderRecursive(TreeNode* root, std::vector<int>& out) {
+  if (root == nullptr) {
+    return;
+  }
+  postorderRecursive(root->left, out);
+  postorderRecursive(root->right, out);
+  out.push_back(root->val);
+}
+{% endhighlight %}
+
+## DFS Traversals (Iterative)
+What it does:
+- Performs DFS without recursion.
+
+Core idea:
+- Use an explicit `stack` to simulate function calls.
+- Push order decides traversal order.
+
+How it works:
+- Inorder: push all left nodes, process node, move right.
+- Preorder: pop node, visit, then push right and left.
+- Postorder: use two stacks (or one stack + state) to reverse processing.
+
+When to use:
+- When recursion depth might overflow.
+- When interviewer asks for iterative version.
+
+Complexity:
+- Time `O(n)`.
+- Extra space `O(h)` average, `O(n)` worst-case skewed tree.
+
+Edge-case checklist:
+- Wrong push order in preorder.
+- Not handling empty tree before first push.
+
+Dry-run:
+- Same tree as above.
+- Iterative preorder:
+- Start stack `[1]`.
+- Pop `1`, output `[1]`, push `3`, then `2`.
+- Pop `2`, output `[1, 2]`.
+- Pop `3`, output `[1, 2, 3]`.
+
+### Inorder
+
+{% highlight c++ %}
+std::vector<int> inorderIterative(TreeNode* root) {
+  std::vector<int> out;
+  std::stack<TreeNode*> st;
+  TreeNode* curr = root;
+
+  while (curr != nullptr || !st.empty()) {
+    while (curr != nullptr) {
+      st.push(curr);
+      curr = curr->left;
+    }
+    curr = st.top();
+    st.pop();
+    out.push_back(curr->val);
+    curr = curr->right;
+  }
+  return out;
+}
+{% endhighlight %}
+
+### Preorder
+
+{% highlight c++ %}
+std::vector<int> preorderIterative(TreeNode* root) {
+  std::vector<int> out;
+  if (root == nullptr) {
+    return out;
+  }
+
+  std::stack<TreeNode*> st;
+  st.push(root);
+  while (!st.empty()) {
+    TreeNode* node = st.top();
+    st.pop();
+    out.push_back(node->val);
+    if (node->right != nullptr) {
+      st.push(node->right);
+    }
+    if (node->left != nullptr) {
+      st.push(node->left);
+    }
+  }
+  return out;
+}
+{% endhighlight %}
+
+### Postorder
+
+{% highlight c++ %}
+std::vector<int> postorderIterative(TreeNode* root) {
+  std::vector<int> out;
+  if (root == nullptr) {
+    return out;
+  }
+
+  std::stack<TreeNode*> st1;
+  std::stack<TreeNode*> st2;
+  st1.push(root);
+
+  while (!st1.empty()) {
+    TreeNode* node = st1.top();
+    st1.pop();
+    st2.push(node);
+    if (node->left != nullptr) {
+      st1.push(node->left);
+    }
+    if (node->right != nullptr) {
+      st1.push(node->right);
+    }
+  }
+
+  while (!st2.empty()) {
+    out.push_back(st2.top()->val);
+    st2.pop();
+  }
+  return out;
+}
+{% endhighlight %}
+
+## Level Order (BFS)
+What it does:
+- Visits nodes level by level from top to bottom.
+
+Core idea:
+- Queue preserves first-in-first-out order for each level.
+- Queue size at loop start gives current level width.
+
+How it works:
+- Start with root in queue.
+- Pop `level_size` nodes to form one level.
+- Push each popped node's children.
+
+When to use:
+- Level-wise output.
+- Shortest path in unweighted tree edges.
+- Problems like right view, zigzag, level sums.
+
+Complexity:
+- Time `O(n)`.
+- Extra space `O(w)` where `w` is max tree width.
+
+Edge-case checklist:
+- Mixing nodes from two levels if `level_size` is not fixed per round.
+- Forgetting null checks before enqueueing children.
+
+Dry-run:
+- Tree:
+```text
+      1
+    /   \
+   2     3
+  / \     \
+ 4   5     6
+```
+- Level 0: `[1]`
+- Level 1: `[2, 3]`
+- Level 2: `[4, 5, 6]`
+
+{% highlight c++ %}
+std::vector<std::vector<int>> levelOrder(TreeNode* root) {
+  std::vector<std::vector<int>> levels;
+  if (root == nullptr) {
+    return levels;
+  }
+
+  std::queue<TreeNode*> q;
+  q.push(root);
+
+  while (!q.empty()) {
+    int sz = static_cast<int>(q.size());
+    std::vector<int> level;
+    for (int i = 0; i < sz; ++i) {
+      TreeNode* node = q.front();
+      q.pop();
+      level.push_back(node->val);
+      if (node->left != nullptr) {
+        q.push(node->left);
+      }
+      if (node->right != nullptr) {
+        q.push(node->right);
+      }
+    }
+    levels.push_back(level);
+  }
+  return levels;
+}
+{% endhighlight %}
+
+## BST: Search, Insert, Delete
+What it does:
+- Supports ordered insert/search/delete on tree data.
+
+Core idea:
+- BST invariant: left subtree values < node < right subtree values.
+- Each comparison discards half of remaining subtree path.
+
+How it works:
+- Search: keep moving left/right by comparison.
+- Insert: recurse/iterate until null spot and attach new node.
+- Delete: leaf -> remove; one child -> promote child; two children -> copy inorder successor, then delete successor node.
+
+When to use:
+- Dynamic ordered set/map style operations.
+- Problems needing predecessor/successor and in-order traversal.
+
+Complexity:
+- Average `O(log n)` for search/insert/delete.
+- Worst-case `O(n)` on skewed tree.
+
+Edge-case checklist:
+- Not handling duplicate keys consistently.
+- Memory leaks when deleting nodes.
+- Forgetting to return updated subtree root after recursion.
+
+Dry-run:
+- BST insert sequence: `5, 3, 7, 2, 4, 6, 8`.
+- Search `4`: `5 -> 3 -> 4` found.
+- Delete `7`:
+- Node `7` has two children (`6`, `8`).
+- Inorder successor is `8`.
+- Replace `7` with `8`, then delete old `8` leaf.
+
+### Search
+
+{% highlight c++ %}
+TreeNode* searchBst(TreeNode* root, int target) {
+  TreeNode* curr = root;
+  while (curr != nullptr) {
+    if (curr->val == target) {
+      return curr;
+    }
+    curr = (target < curr->val) ? curr->left : curr->right;
+  }
+  return nullptr;
+}
+{% endhighlight %}
+
+### Insert
+
+{% highlight c++ %}
+TreeNode* insertBst(TreeNode* root, int x) {
+  if (root == nullptr) {
+    return new TreeNode(x);
+  }
+  if (x < root->val) {
+    root->left = insertBst(root->left, x);
+  } else if (x > root->val) {
+    root->right = insertBst(root->right, x);
+  }
+  return root;
+}
+{% endhighlight %}
+
+### Delete
+
+{% highlight c++ %}
+TreeNode* findMin(TreeNode* root) {
+  while (root != nullptr && root->left != nullptr) {
+    root = root->left;
+  }
+  return root;
+}
+
+TreeNode* deleteBst(TreeNode* root, int key) {
+  if (root == nullptr) {
+    return nullptr;
+  }
+
+  if (key < root->val) {
+    root->left = deleteBst(root->left, key);
+  } else if (key > root->val) {
+    root->right = deleteBst(root->right, key);
+  } else {
+    if (root->left == nullptr) {
+      TreeNode* right = root->right;
+      delete root;
+      return right;
+    }
+    if (root->right == nullptr) {
+      TreeNode* left = root->left;
+      delete root;
+      return left;
+    }
+
+    TreeNode* succ = findMin(root->right);
+    root->val = succ->val;
+    root->right = deleteBst(root->right, succ->val);
+  }
+  return root;
+}
+{% endhighlight %}
+
+## LCA (Binary Tree)
+What it does:
+- Finds the lowest node that is ancestor of both target nodes.
+
+Core idea:
+- Postorder-like recursion asks left and right subtrees where targets exist.
+- Split between left and right means current node is the answer.
+
+How it works:
+- If current node is null or matches a target, return it.
+- Recurse into left and right.
+- If both sides return non-null, current node is LCA.
+- Otherwise return whichever side is non-null.
+
+When to use:
+- Relationship queries in trees.
+- Distance/path problems between two nodes.
+
+Complexity:
+- Time `O(n)`.
+- Extra space `O(h)` recursion stack.
+
+Edge-case checklist:
+- Confusing binary-tree LCA with BST-specific LCA optimization.
+- Not clarifying whether both targets are guaranteed to exist.
+
+Dry-run:
+- Tree:
+```text
+      3
+    /   \
+   5     1
+  / \   / \
+ 6   2 0   8
+```
+- Query `p=6`, `q=2`.
+- `6` is in left subtree of `5`, `2` is also in left subtree of `5`.
+- Lowest node covering both is `5`.
+
+{% highlight c++ %}
+TreeNode* lcaBinaryTree(TreeNode* root, int p, int q) {
+  if (root == nullptr || root->val == p || root->val == q) {
+    return root;
+  }
+
+  TreeNode* left = lcaBinaryTree(root->left, p, q);
+  TreeNode* right = lcaBinaryTree(root->right, p, q);
+
+  if (left != nullptr && right != nullptr) {
+    return root;
+  }
+  return (left != nullptr) ? left : right;
+}
+{% endhighlight %}
+
+## Diameter (Binary Tree)
+What it does:
+- Computes longest path length between any two nodes (in edges).
+
+Core idea:
+- Best path through one node equals `left_height + right_height`.
+- While computing height, keep updating global best diameter.
+
+How it works:
+- Recursively compute left/right heights.
+- Update `diameter = max(diameter, left + right)`.
+- Return `1 + max(left, right)` as height to parent.
+
+When to use:
+- Longest path problems in trees.
+- Foundation for many tree DP questions.
+
+Complexity:
+- Time `O(n)`.
+- Extra space `O(h)`.
+
+Edge-case checklist:
+- Mixing "number of edges" vs "number of nodes" definition.
+- Recomputing height separately causing `O(n^2)`.
+
+Dry-run:
+- Tree:
+```text
+    1
+   / \
+  2   3
+ /
+4
+```
+- At node `2`: left height `1`, right height `0`, local diameter `1`.
+- At node `1`: left height `2`, right height `1`, local diameter `3`.
+- Final diameter (edges) = `3` (`4 -> 2 -> 1 -> 3`).
+
+{% highlight c++ %}
+int heightForDiameter(TreeNode* root, int& diameter) {
+  if (root == nullptr) {
+    return 0;
+  }
+
+  int lh = heightForDiameter(root->left, diameter);
+  int rh = heightForDiameter(root->right, diameter);
+  diameter = std::max(diameter, lh + rh);
+  return 1 + std::max(lh, rh);
+}
+
+int diameterBinaryTree(TreeNode* root) {
+  int diameter = 0;
+  heightForDiameter(root, diameter);
+  return diameter;
+}
+{% endhighlight %}

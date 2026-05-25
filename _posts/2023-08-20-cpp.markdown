@@ -1,0 +1,51 @@
+---
+layout: single
+comments: true
+title: ['Effective C++']
+date: 2023-08-20 00:00:00-0000
+categories: ['Language']
+---
+
+## C++
+
+#### Item 1:  
+
+##### prefer the compiler to the preprocessor
+
+Macros are processod by preprocesor before compiler, therefore they do not appear in symbols table. 
+1. This makes debugging difficult as it hard to know the source of the constant that the macro defines.
+2. Preprocessor substitutes value of Macros across files. This will result in multiple copies of the constant.
+
+```c
+#define PI 3.14 
+
+// instead of define use const
+const double PI = 3.14;
+```
+
+##### Class specific constants
+
+To limit the scope of a constant to a class, make it a member, and to ensure there is atmost one copy define it ***static***
+
+```c
+class Widget {
+    private:
+        static const int MAX_WIDGET = 13;
+        int widgets[MAX_WIDGET]; 
+}
+```
+
+#### const pointer
+
+```c
+// non-const ptr
+// const data
+const char *ptr = "Hello";
+
+// const ptr
+// non-const data
+char *const ptr = "Hello" 
+```
+-----
+
+

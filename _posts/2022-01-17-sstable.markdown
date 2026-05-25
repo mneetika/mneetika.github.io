@@ -1,0 +1,388 @@
+---
+layout: single
+comments: true
+title: SSTable
+date: 2022-01-17 00:00:00-0000
+description: Persistent Sorted Storage
+categories: ['Distributed Systems Components']
+---
+
+`SSTable` stands for `Sorted String Table`.
+
+An SSTable is an immutable, sorted on-disk map of `key -> value` records.
+
+SSTables are a core building block in LSM-tree based systems like `Bigtable`, `Cassandra`, `HBase`, `LevelDB`, and `RocksDB`.
+
+When an in-memory `memtable` crosses a threshold, it is flushed to disk as a new SSTable.
+
+---
+
+## Why SSTables Exist
+
+A B-Tree style update does random writes in-place. SSTables avoid this by converting random writes into sequential appends plus background merge work.
+
+SSTables optimize for:
+1. Fast sequential writes
+2. High write throughput
+3. Ordered range scans (`key1..key2`)
+4. Deterministic cleanup via compaction
+
+Trade-off:
+1. A read may check multiple files
+2. Background compaction is mandatory
+
+---
+
+## End-to-End Data Flow
+
+For every mutation `(key, value, timestamp)`:
+1. Append to `WAL` for durability
+2. Insert into `memtable` (sorted structure in memory)
+3. ACK client after WAL + memtable update
+4. Flush memtable to new SSTable when memory threshold is reached
+5. Compact SSTables in background to remove stale versions
+
+SSTables are immutable after creation. New writes never modify an existing SSTable.
+
+<div>
+  <center>{% include figure.html path="assets/img/sstable/sstable.png" %}</center>
+</div>
+
+---
+
+## SSTable File Layout
+
+At a practical level, one SSTable usually contains:
+1. `Data blocks` (sorted records, often compressed block-by-block)
+2. `Primary index` (block key boundaries -> block offsets)
+3. `Index summary` (sampled primary index entries kept in memory)
+4. `Bloom filter` (fast negative lookup)
+5. `Metadata` (min/max timestamp, tombstone stats, compression/checksum info)
+
+<div>
+  <center>{% include figure.html path="assets/img/sstable/table.png" %}</center>
+</div>
+
+For hot point reads, many systems also use:
+1. `Key cache`: key -> data offset
+2. `Chunk/block cache`: recently read data blocks in memory
+
+<div>
+  <center>{% include figure.html path="assets/img/sstable/partition.png" %}</center>
+</div>
+
+Each data block stores records in sorted key order. A common per-record shape is:
+1. `key_length`
+2. `value_length` (or tombstone marker)
+3. `timestamp/sequence`
+4. `key bytes`
+5. `value bytes`
+
+Implementations usually apply prefix compression inside blocks:
+1. store shared prefix length with previous key
+2. store only non-shared suffix
+3. place restart points every N keys for binary search
+
+---
+
+## Read Path
+
+For a point lookup of key `k`:
+1. Check `memtable`
+2. Check immutable memtables waiting for flush
+3. Search SSTables in recency order (newest first):
+   1. Test Bloom filter
+   2. If Bloom says `no`, skip this SSTable
+   3. If Bloom says `maybe`, probe index summary
+   4. Read target section of primary index
+   5. Seek target data block and binary search inside block
+4. Stop at first visible version for the read timestamp/snapshot
+
+If latest version is a tombstone, the key is deleted from reader perspective.
+
+<div>
+  <center>{% include figure.html path="assets/img/sstable/read.png" %}</center>
+</div>
+
+---
+
+## Range Scans
+
+Range reads (`startKey..endKey`) use iterators from:
+1. memtable
+2. immutable memtables
+3. every overlapping SSTable
+
+These iterators are merged with a min-heap by key, while applying:
+1. latest-version wins
+2. tombstone suppression
+3. snapshot timestamp visibility rules
+
+---
+
+## WAL, Flush, and Recovery Semantics
+
+WAL provides durability for memtable state not yet flushed.
+
+A typical sequence:
+1. Append mutation to WAL segment
+2. Insert mutation in memtable
+3. Rotate memtable when full
+4. Flush immutable memtable to SSTable
+5. Mark old WAL segments as recyclable after all their data is persisted
+
+Crash recovery:
+1. Load existing SSTables
+2. Replay non-obsolete WAL segments
+3. Rebuild memtable in key order
+
+---
+
+## Deletes, Tombstones, and TTL
+
+SSTables are immutable, so delete is represented as a tombstone record.
+
+A tombstone can only be removed during compaction when it is safe:
+1. all older values for that key are known to be covered by compaction scope
+2. grace period or replication constraints are satisfied
+3. snapshot readers that still need old versions are not violated
+
+TTL expiration is also enforced lazily:
+1. reads can ignore expired cells
+2. compaction physically drops expired records
+
+---
+
+## Compaction Internals
+
+Compaction is a sorted merge of SSTable inputs into new SSTable outputs.
+
+During merge, compaction:
+1. Reads multiple sorted iterators
+2. Resolves same-key conflicts by timestamp/sequence number
+3. Drops shadowed values and obsolete tombstones
+4. Rebuilds new Bloom filters and indexes
+5. Atomically swaps old files with compacted files
+
+<div>
+  <center>{% include figure.html path="assets/img/sstable/compaction.png" %}</center>
+</div>
+
+Compaction policy affects amplification:
+1. `Size-tiered (STCS)`: fewer compaction rewrites, higher read amplification
+2. `Leveled (LCS)`: stricter level size limits, lower read amplification, higher write amplification
+
+<div>
+  <center>{% include figure.html path="assets/img/sstable/compaction_flow.png" %}</center>
+</div>
+
+---
+
+## Read, Write, and Space Amplification
+
+Three metrics control production behavior:
+1. `Read amplification`: number of files/blocks touched per read
+2. `Write amplification`: bytes rewritten by compaction per byte ingested
+3. `Space amplification`: extra disk due to multiple versions and tombstones
+
+You reduce one by increasing another. There is no free configuration.
+
+---
+
+## Worked Example
+
+Assume key `user:42` has the following versions:
+1. `SSTable-5` (newest): `user:42 -> tombstone @ ts=120`
+2. `SSTable-4`: `user:42 -> "gold" @ ts=110`
+3. `SSTable-2` (oldest): `user:42 -> "silver" @ ts=90`
+
+Point read for `user:42`:
+1. memtable miss
+2. check `SSTable-5` Bloom -> maybe
+3. probe index summary + primary index -> locate block
+4. read block, find tombstone at `ts=120`
+5. stop search, return `not found`
+
+Even though older SSTables contain values, they are shadowed by the tombstone.
+
+Now assume compaction merges `SSTable-5`, `SSTable-4`, and `SSTable-2`:
+1. compare records by key and timestamp
+2. keep only newest logical state
+3. if tombstone is still within grace window, keep tombstone in output
+4. if grace window is over and all older data is covered, drop tombstone and older values
+
+Post-compaction possibilities:
+1. output keeps tombstone (safe but uses extra space)
+2. output removes all versions of `user:42` (fully reclaimed)
+
+The second case improves both read and space amplification, but only when correctness constraints are met.
+
+---
+
+## Worked Example: Range Scan Merge
+
+Range query: `user:40` to `user:45`
+
+Streams visible to query:
+1. memtable: `(user:41, "A", ts=130)`, `(user:44, null, ts=131)`
+2. SSTable-6: `(user:40, "X", ts=120)`, `(user:44, "M", ts=100)`
+3. SSTable-3: `(user:42, "B", ts=90)`, `(user:45, "C", ts=95)`
+
+Merge steps:
+1. heap picks smallest key among stream heads
+2. for same key, highest timestamp wins
+3. tombstone winner suppresses older values
+4. advance only streams that contributed the emitted/suppressed key
+
+Final scan output:
+1. `user:40 -> X`
+2. `user:41 -> A`
+3. `user:42 -> B`
+4. `user:44` is deleted (tombstone at ts=131 wins)
+5. `user:45 -> C`
+
+This is the same logical rule as point read, but applied continuously across ordered iterators.
+
+---
+
+## Operational Failure Modes
+
+Common production issues around SSTables:
+1. `Compaction debt`: flush produces SSTables faster than compaction can merge them
+2. `Bloom filter under-provisioning`: too many false positives increase disk seeks
+3. `Large partition/hot key`: one key range dominates IO and compaction cost
+4. `Tombstone accumulation`: delayed cleanup hurts reads and disk usage
+5. `Write stalls`: memory and flush queues fill, forcing foreground backpressure
+
+Signals to watch:
+1. pending compaction bytes/tasks
+2. read p99 with Bloom false-positive rate
+3. number of SSTables touched per read
+4. tombstone scan/drop metrics
+5. flush latency and stall time
+
+---
+
+## TypeScript Reference Snippets
+
+### Sparse index lookup in one SSTable
+
+```ts
+type IndexEntry = {
+  firstKey: string;
+  lastKey: string;
+  blockOffset: number;
+};
+
+export function findCandidateBlock(index: IndexEntry[], key: string): number | null {
+  let lo = 0;
+  let hi = index.length - 1;
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const e = index[mid];
+    if (key < e.firstKey) hi = mid - 1;
+    else if (key > e.lastKey) lo = mid + 1;
+    else return e.blockOffset;
+  }
+  return null;
+}
+```
+
+### Compaction merge with tombstone handling
+
+```ts
+type Row = {
+  key: string;
+  value: string | null; // null => tombstone
+  ts: number; // larger is newer
+};
+
+export function compactSortedStreams(a: Row[], b: Row[]): Row[] {
+  const out: Row[] = [];
+  let i = 0;
+  let j = 0;
+
+  const emitNewest = (x: Row, y: Row) => {
+    const newest = x.ts >= y.ts ? x : y;
+    if (newest.value !== null) out.push(newest);
+  };
+
+  while (i < a.length && j < b.length) {
+    if (a[i].key < b[j].key) {
+      if (a[i].value !== null) out.push(a[i]);
+      i++;
+      continue;
+    }
+    if (a[i].key > b[j].key) {
+      if (b[j].value !== null) out.push(b[j]);
+      j++;
+      continue;
+    }
+
+    emitNewest(a[i], b[j]);
+    i++;
+    j++;
+  }
+
+  while (i < a.length) {
+    if (a[i].value !== null) out.push(a[i]);
+    i++;
+  }
+  while (j < b.length) {
+    if (b[j].value !== null) out.push(b[j]);
+    j++;
+  }
+
+  return out;
+}
+```
+
+### K-way merge iterator shape for range scan
+
+```ts
+type KV = { key: string; value: string | null; ts: number };
+type Stream = Iterator<KV>;
+
+export function* mergeStreams(streams: Stream[]): Generator<KV> {
+  const heads: Array<{ i: number; v: KV }> = [];
+
+  for (let i = 0; i < streams.length; i++) {
+    const n = streams[i].next();
+    if (!n.done) heads.push({ i, v: n.value });
+  }
+
+  while (heads.length > 0) {
+    heads.sort((a, b) => (a.v.key === b.v.key ? b.v.ts - a.v.ts : a.v.key.localeCompare(b.v.key)));
+    const top = heads.shift()!;
+    if (top.v.value !== null) yield top.v;
+
+    const next = streams[top.i].next();
+    if (!next.done) heads.push({ i: top.i, v: next.value });
+  }
+}
+```
+
+---
+
+## Tuning in Practice
+
+1. `Memtable size`: larger memtables reduce flush frequency but increase recovery replay time
+2. `Bloom filter bits/key`: lower false-positive rate improves read latency but costs RAM
+3. `Block size`: larger blocks improve throughput; smaller blocks improve point lookup precision
+4. `Compression`: reduces IO and storage; increases CPU
+5. `Compaction concurrency`: too low causes backlog, too high competes with foreground traffic
+6. `Tombstone grace/TTL`: aggressive cleanup reduces space, but must respect replication/read-repair guarantees
+
+---
+
+## Summary
+
+SSTables are immutable sorted files designed for LSM storage engines. Their performance comes from sequential writes, indexed block reads, Bloom filter pruning, and continuous compaction. Most production tuning is the art of balancing read, write, and space amplification against workload shape.
+
+---
+
+## References
+
+1. [SSTable and Log Structured Storage (Ilya Grigorik)](https://www.igvita.com/2012/02/06/sstable-and-log-structured-storage-leveldb/)
+2. [Bigtable: A Distributed Storage System for Structured Data (Google paper)](https://research.google/pubs/pub27898/)

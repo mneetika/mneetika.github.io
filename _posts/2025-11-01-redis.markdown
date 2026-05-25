@@ -1,0 +1,232 @@
+---
+layout: single
+comments: true
+title: "Designing a Distributed Cache for High TPS Systems"
+date: 2025-11-01 11:12:00-0400
+description: "A deep dive into designing high-performance distributed cache systems using Redis — internal architecture, scalability, fault tolerance, and best practices."
+tags: [distributed-systems, caching, redis, scalability, high-tps]
+categories: ['Distributed Systems Components']
+---
+
+## Introduction
+
+Modern large-scale systems must handle millions of requests per second while maintaining sub-millisecond latency. One of the key components that makes this possible is **caching** — a fast, temporary storage layer that serves frequently accessed data with minimal overhead.
+
+In this post, we’ll explore how to **design a distributed cache for high TPS (Transactions Per Second)** systems. We’ll focus on Redis — one of the most popular in-memory caching solutions — and understand its internal design, distributed architecture, and mechanisms that eliminate single points of failure.
+
+---
+
+## What Is a Cache?
+
+A **cache** is a high-speed data storage layer that stores a subset of data, usually transient, so that future requests for that data can be served faster than fetching it from the original source (like a database or remote API).
+
+Caching improves:
+
+- **Latency:** Reduces round-trip time to slower data stores.
+- **Throughput:** Frees backend systems to handle more concurrent requests.
+- **Scalability:** Reduces load on downstream services.
+
+### Common Caching Layers
+
+| Layer | Example | Description |
+|-------|----------|-------------|
+| **In-memory cache** | Redis, Memcached | Fastest, used for real-time lookups |
+| **Application cache** | Guava, Caffeine | Embedded in app memory |
+| **CDN cache** | CloudFront, Akamai | Geographically distributed content cache |
+
+However, caching introduces trade-offs between **freshness**, **consistency**, and **performance** — a balance every distributed system must carefully tune.
+
+---
+
+## Redis: A Quick Overview
+
+**Redis** (REmote DIctionary Server) is an **open-source, in-memory data structure store**, widely used as a cache, message broker, and database.
+
+Key features:
+- Sub-millisecond response times.
+- Multiple data types — strings, lists, hashes, sets, sorted sets, streams.
+- Built-in TTL and eviction policies (LRU, LFU, random, TTL-based).
+- Persistence via RDB (snapshots) and AOF (append-only files).
+
+Redis’ performance comes from being **single-threaded** (for predictable event loop behavior) and **memory-resident**, avoiding disk I/O latency.
+
+---
+
+## How Redis Works Internally
+
+### 1. Single-Threaded Event Loop
+
+Redis uses a **single-threaded event loop model** — all operations run sequentially in memory, ensuring simplicity and atomicity.  
+It handles thousands of concurrent connections using **I/O multiplexing** (`epoll`, `kqueue`) instead of threading.
+
+### 2. Memory Management and Persistence
+
+Redis stores all data in **RAM** for speed, but supports persistence through:
+- **RDB (Redis Database)** snapshots taken at intervals.
+- **AOF (Append Only File)** — logs each write for recovery after crash.
+
+These can be combined for a balance between performance and durability.
+
+### 3. Eviction and Expiry
+
+When memory is full, Redis evicts keys based on configured policies:
+- `allkeys-lru`, `volatile-lru`, `allkeys-lfu`, `volatile-ttl`, etc.
+Keys can also expire based on TTLs set at creation time.
+
+### 4. Networking Model
+
+Redis uses **non-blocking I/O** with a single event loop. This model avoids context switches and ensures minimal latency.
+
+> 📖 *References:*  
+> [Redis Architecture Overview](https://redis.io/docs/latest/operate/oss_and_stack/architecture/)  
+> [Salvatore Sanfilippo (antirez) Blog](https://antirez.com/latest)
+
+---
+
+## Redis in a Distributed Environment
+
+### 1. Sharding and Partitioning
+
+To scale horizontally, Redis distributes data across nodes using **sharding**:
+
+- **Client-side sharding:** Application determines which node holds which key.  
+- **Redis Cluster:** Native mode that splits keyspace into 16,384 **hash slots** automatically distributed across nodes.
+
+Each key’s slot = `CRC16(key) % 16384`.
+
+### 2. Redis Sentinel
+
+Redis Sentinel provides **monitoring, failover, and notification** for master-replica setups:
+- Detects master failures.
+- Promotes replicas to masters.
+- Notifies clients of new topology.
+
+### 3. Cluster Topology
+
+A typical cluster has:
+- **Masters:** Store writable data.
+- **Replicas:** Provide redundancy and handle read requests.
+- **Gossip protocol:** Used to detect node failures and propagate topology changes.
+
+> 📖 *References:*  
+> [Redis Cluster Specification](https://redis.io/docs/latest/operate/oss_and_stack/cluster/)  
+> [Redis Sentinel Documentation](https://redis.io/docs/latest/operate/oss_and_stack/sentinel/)
+
+---
+
+## Overcoming the Single Point of Failure
+
+### 1. Replication
+
+Each Redis master has one or more replicas. If a master fails, a replica can be promoted automatically, minimizing downtime.
+
+### 2. Automatic Failover
+
+With Sentinel or Cluster, failover is automatic:
+- Sentinel/Cluster detects master unavailability.
+- Elects a new master from replicas.
+- Updates cluster topology dynamically.
+
+### 3. Durability and Recovery
+
+Redis supports hybrid persistence (RDB + AOF) to recover data after crashes.
+
+### 4. Consistency
+
+Redis offers **eventual consistency** in distributed setups — replicas might lag slightly behind masters, but eventual convergence ensures overall reliability.
+
+### 5. High-TPS Design Optimizations
+
+- **Connection pooling:** Reuse TCP connections to reduce overhead.
+- **Command pipelining:** Batch multiple commands per round-trip.
+- **Lua scripting:** Execute atomic multi-key operations server-side.
+- **Hashing keys:** Avoid hotspots on popular keys.
+- **Eviction tuning:** Ensure memory stability at high load.
+
+---
+
+## Designing a High-TPS Distributed Cache
+
+Building a cache that sustains millions of transactions per second involves architectural and operational tuning.
+
+### 1. Horizontal Scalability
+
+Add more shards (nodes) as TPS increases. Redis Cluster makes this seamless.
+
+### 2. Data Partitioning
+
+Evenly distribute hash slots to prevent bottlenecks. Monitor for “hot shards”.
+
+### 3. Replication Factor
+
+Maintain at least **one replica per master** for fault tolerance.  
+Replication factor of `N+1` ensures minimal data loss during failover.
+
+### 4. Monitoring and Observability
+
+Track:
+- **Cache hit ratio**
+- **Eviction rate**
+- **Command latency**
+- **Replication lag**
+
+Use tools like `RedisInsight`, Prometheus, and Grafana for observability.
+
+### 5. Avoiding Cache Stampede
+
+When many clients request a missing key simultaneously:
+- Use **lock-based cache rebuilds**.
+- Implement **refresh-ahead** or **stale-while-revalidate** strategies.
+
+### 6. Example Architecture
+
+            ┌──────────────────────┐
+            │     Load Balancer     │
+            └─────────┬─────────────┘
+                      │
+            ┌─────────▼─────────┐
+            │   Application     │
+            │   Servers         │
+            └─────────┬─────────┘
+                      │
+            ┌─────────▼─────────┐
+            │ Redis Cluster     │
+            │ (Masters + Replicas)
+            └─────────┬─────────┘
+                      │
+            ┌─────────▼─────────┐
+            │ Persistent Store  │
+            │ (e.g., Postgres)  │
+            └───────────────────┘
+
+
+> 📖 *References:*  
+> [AWS Redis Best Practices](https://aws.amazon.com/elasticache/redis/best-practices/)  
+> [Netflix Tech Blog – Caching Strategies](https://netflixtechblog.com/)  
+
+---
+
+## Conclusion
+
+Caching is one of the most powerful levers for scaling distributed systems. Redis, with its in-memory design, simplicity, and native cluster support, provides an excellent foundation for building **high TPS, low-latency architectures**.
+
+A well-designed distributed cache:
+- Minimizes database load.  
+- Eliminates single points of failure.  
+- Scales horizontally with predictable performance.
+
+Experiment with **Redis Cluster locally** using Docker or `redis-cli`, and observe how slot migrations and failovers behave in real time — the best way to appreciate the elegance of distributed caching in action.
+
+---
+
+## References
+
+1. [Redis Documentation](https://redis.io/docs/latest/)
+2. [Redis Architecture Overview](https://redis.io/docs/latest/operate/oss_and_stack/architecture/)
+3. [Redis Cluster Specification](https://redis.io/docs/latest/operate/oss_and_stack/cluster/)
+4. [Redis Sentinel Documentation](https://redis.io/docs/latest/operate/oss_and_stack/sentinel/)
+5. [AWS ElastiCache Best Practices](https://aws.amazon.com/elasticache/redis/best-practices/)
+6. [Netflix Tech Blog – Caching at Scale](https://netflixtechblog.com/)
+7. [Salvatore Sanfilippo (antirez) Blog](https://antirez.com/latest)
+
+---

@@ -1,0 +1,26 @@
+---
+layout: single
+title: Blog
+permalink: /blog/
+author_profile: true
+---
+
+{% assign categories_sorted = site.categories | sort %}
+{% for category in categories_sorted %}
+<h2 class="archive__subtitle">{{ category[0] }}</h2>
+
+{% assign posts_in_category = category[1] | sort: "date" | reverse %}
+<ul>
+{% for post in posts_in_category %}
+  <li>
+    <a href="{{ post.url | relative_url }}" rel="permalink">{{ post.title }}</a>
+    {% if post.date %}<small> - {{ post.date | date: "%b %d, %Y" }}</small>{% endif %}
+    {% if post.read_time %}
+      {% assign wpm = site.words_per_minute | default: 160 %}
+      {% assign minutes = post.content | number_of_words | divided_by: wpm | plus: 1 %}
+      <small> - {{ minutes }} min</small>
+    {% endif %}
+  </li>
+{% endfor %}
+ </ul>
+{% endfor %}
