@@ -29,6 +29,10 @@ At its foundation, a Geohash represents the Earth as a hierarchical grid.
 
 A Geohash string such as `tdr1v` therefore represents a **rectangular geographic region**, not a single point.
 
+<div>
+    <center>{% include figure.html path="assets/img/geo_hash/geohash.png" %}</center>
+</div>
+
 ---
 
 ## Spatial Locality and Prefix Matching
